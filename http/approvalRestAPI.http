@@ -5,8 +5,8 @@ Accept: */*
 Access-Control-Allow-Origin: *
 
 {
-  "employeeId": "ap_second",
-  "employeePassword": "ap_second"
+  "employeeId": "ap_first",
+  "employeePassword": "ap_first"
 }
 
 ### 결재 대기 문서 조회
@@ -25,7 +25,7 @@ Authorization: Bearer eyJkYXRlIjoxNzA4NDUwMDI4MDI0LCJ0eXBlIjoiand0IiwiYWxnIjoiSF
 POST http://localhost:1208/approval/submit-overwork
 Accept: */*
 Content-Type: application/json
-Authorization: Bearer eyJkYXRlIjoxNzA4NTA3MDYzODY4LCJ0eXBlIjoiand0IiwiYWxnIjoiSFMyNTYifQ.eyJlbXBsb3llZU5hbWUiOiLquYDrr7zsnqwiLCJzdWIiOiJhcF9zZWNvbmQiLCJlbXBEZXB0TmFtZSI6Iuy0neustO2MgCIsImVtcENvZGUiOjMxLCJlbXBsb3llZUVtYWlsIjoiYXBfc2Vjb25kQGdtYWlsLmNvbSIsImVtcEdyb3VwQ29kZSI6MSwiZW1wbG95ZWVJZCI6ImFwX3NlY29uZCIsImV4cCI6MTcwODUxMDY2MywiZW1wbG95ZWVSb2xlIjpbeyJlbXBsb3llZUNvZGUiOjMxLCJhdXRob3JpdHlDb2RlIjoxLCJhdXRob3JpdHkiOnsiYXV0aG9yaXR5Q29kZSI6MSwiYXV0aG9yaXR5TmFtZSI6IlJPTEVfVVNFUiJ9fV19._LVLgBhMoGZOFYP6MzoURNEuBmoIR77JbNv8TvDyO70
+Authorization: Bearer eyJkYXRlIjoxNzA4NTA5NjI4NzkzLCJ0eXBlIjoiand0IiwiYWxnIjoiSFMyNTYifQ.eyJlbXBsb3llZU5hbWUiOiLshpDtnaXrr7wiLCJzdWIiOiJhcF9maXJzdCIsImVtcERlcHROYW1lIjoi7LSd66y07YyAIiwiZW1wQ29kZSI6MzAsImVtcGxveWVlRW1haWwiOiJhcF9maXJzdEBnbWFpbC5jb20iLCJlbXBHcm91cENvZGUiOjEsImVtcGxveWVlSWQiOiJhcF9maXJzdCIsImV4cCI6MTcwODUxMzIyOCwiZW1wbG95ZWVSb2xlIjpbeyJlbXBsb3llZUNvZGUiOjMwLCJhdXRob3JpdHlDb2RlIjoxLCJhdXRob3JpdHkiOnsiYXV0aG9yaXR5Q29kZSI6MSwiYXV0aG9yaXR5TmFtZSI6IlJPTEVfVVNFUiJ9fV19.kmtS1KPfEt8TyhTKI9dcbm_2_hJz9766BmF0F4-Tq7Y
 
 ### 결재 문서 상신 - SW사용신청서
 POST http://localhost:1208/approval/submit-sw-use

@@ -288,18 +288,35 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
         approvalLineRepository.save(approvalLine);
     }
 
-    // 추가 결재선 저장
-    public void saveApprovalLines(ApprovalDoc savedApprovalDoc){
-        log.info("[ApprovalService] saving line info started =====");
-        AdditionalApprovalLine additionalApprovalLine = new AdditionalApprovalLine();
-        additionalApprovalLine.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-        additionalApprovalLine.setEmployeeCode(32L);
-        additionalApprovalLine.setApprovalProcessOrder(2L);
-        additionalApprovalLine.setApprovalProcessStatus("대기");
-        additionalApprovalLine.setApprovalRejectedReason(null);
-        additionalApprovalLineRepository.save(additionalApprovalLine);
-    }
+//    // 추가 결재선 저장
+//    public void saveApprovalLines(ApprovalDoc savedApprovalDoc){
+//        log.info("[ApprovalService] saving line info started =====");
+//        AdditionalApprovalLine additionalApprovalLine = new AdditionalApprovalLine();
+//        additionalApprovalLine.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
+//
+//        additionalApprovalLine.setEmployeeCode(32L);
+//        additionalApprovalLine.setApprovalProcessOrder(2L);
+//        additionalApprovalLine.setApprovalProcessStatus("대기");
+//        additionalApprovalLine.setApprovalRejectedReason(null);
+//
+//        additionalApprovalLineRepository.save(additionalApprovalLine);
+//    }
 
+    // 추가 결재선 저장
+    public void saveApprovalLines(ApprovalDoc savedApprovalDoc, List<Long> additionalApprovers) {
+        log.info("[ApprovalService] saving line info started =====");
+        for (int i = 0; i < additionalApprovers.size(); i++) {
+            AdditionalApprovalLine additionalApprovalLine = new AdditionalApprovalLine();
+            additionalApprovalLine.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
+
+            additionalApprovalLine.setEmployeeCode(additionalApprovers.get(i));
+            additionalApprovalLine.setApprovalProcessOrder((long) (i + 2)); // 첫 번째 결재자 이후부터 시작하기 위해 +2
+            additionalApprovalLine.setApprovalProcessStatus("대기");
+            additionalApprovalLine.setApprovalRejectedReason(null);
+
+            additionalApprovalLineRepository.save(additionalApprovalLine);
+        }
+    }
     // 대리 결재 지정
     @Transactional
     public String setRepresent(ApprovalRepresentDTO approvalRepresentDTO, User user) {

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Tag(name = "전자 결재")
@@ -38,7 +39,11 @@ public class ApprovalController {
         ApprovalDoc savedApprovalDoc = approvalService.saveOnLeaveApprovalDoc(approvalDocDTO, user);
         approvalService.saveOnLeaveDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-        approvalService.saveApprovalLines(savedApprovalDoc);
+
+        // 추가 결재자 목록
+        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
@@ -47,7 +52,11 @@ public class ApprovalController {
         ApprovalDoc savedApprovalDoc = approvalService.saveOverworkApprovalDoc(approvalDocDTO, user);
         approvalService.saveOverworkDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-        approvalService.saveApprovalLines(savedApprovalDoc);
+
+        // 추가 결재자 목록
+        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
@@ -56,7 +65,11 @@ public class ApprovalController {
         ApprovalDoc savedApprovalDoc = approvalService.saveSWUseveApprovalDoc(approvalDocDTO, user);
         approvalService.saveSWDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-        approvalService.saveApprovalLines(savedApprovalDoc);
+
+        // 추가 결재자 목록
+        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
@@ -65,7 +78,11 @@ public class ApprovalController {
         ApprovalDoc savedApprovalDoc = approvalService.saveWorkTypeApprovalDoc(approvalDocDTO, user);
         approvalService.saveWorkTypeDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-        approvalService.saveApprovalLines(savedApprovalDoc);
+
+        // 추가 결재자 목록
+        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
     @Tag(name = "상신함 - 상신 문서 조회", description = "로그인한 사용자가 상신한 문서 목록 조회")
