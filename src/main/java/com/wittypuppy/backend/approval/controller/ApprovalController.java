@@ -2,6 +2,7 @@ package com.wittypuppy.backend.approval.controller;
 
 import com.wittypuppy.backend.Employee.dto.User;
 import com.wittypuppy.backend.approval.dto.ApprovalDocDTO;
+import com.wittypuppy.backend.approval.dto.ApprovalEmployeeDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalRepresentDTO;
 import com.wittypuppy.backend.approval.entity.ApprovalDoc;
 import com.wittypuppy.backend.approval.service.ApprovalService;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +37,7 @@ public class ApprovalController {
 
     @Tag(name = "문서 상신", description = "결재 문서 상신하기")
     @PostMapping("/submit-on-leave")
-    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(ApprovalDocDTO approvalDocDTO, MultipartFile file, @AuthenticationPrincipal User user){
         ApprovalDoc savedApprovalDoc = approvalService.saveOnLeaveApprovalDoc(approvalDocDTO, user);
         approvalService.saveOnLeaveDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
@@ -44,7 +46,22 @@ public class ApprovalController {
         List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
         approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
+        approvalService.saveAttachement(savedApprovalDoc, file);
+
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
+    }
+
+    // 사원 정보 조회
+    @GetMapping("/approval-employee/{employeeCode}")
+    public ResponseEntity<ResponseDTO> getApprovalEmployee(@PathVariable Long employeeCode) {
+
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "결재 유저 조회 성공", approvalService.findUserDetail(employeeCode)));
+    }
+
+    // 로그인한 사원 조회
+    @GetMapping("/loggedin-employee")
+    public ResponseEntity<ResponseDTO> getLoggedinEmployee(@AuthenticationPrincipal User user){
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "로그인한 사원 조회 성공", approvalService.approvalUserInfo(user)));
     }
 
     @PostMapping("/submit-overwork")

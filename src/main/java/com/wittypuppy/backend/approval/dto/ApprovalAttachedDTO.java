@@ -2,6 +2,7 @@ package com.wittypuppy.backend.approval.dto;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,6 +14,5 @@ public class ApprovalAttachedDTO {
     private ApprovalDocDTO approvalDocDTO;
     private String approvalOgFile;
     private String approvalChangedFile;
-    private LocalDateTime approvalAttachedDate;
     private String whetherDeletedApprovalAttached;
 }

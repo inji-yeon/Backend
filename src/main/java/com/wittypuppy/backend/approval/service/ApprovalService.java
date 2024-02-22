@@ -3,17 +3,19 @@ package com.wittypuppy.backend.approval.service;
 import com.wittypuppy.backend.Employee.dto.User;
 import com.wittypuppy.backend.Employee.entity.LoginEmployee;
 import com.wittypuppy.backend.approval.dto.ApprovalDocDTO;
+import com.wittypuppy.backend.approval.dto.ApprovalEmployeeDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalRepresentDTO;
 import com.wittypuppy.backend.approval.entity.*;
 import com.wittypuppy.backend.approval.repository.*;
+import com.wittypuppy.backend.util.FileUploadUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.jdbc.Work;
-import org.hibernate.sql.ast.tree.expression.Over;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -29,11 +31,18 @@ public class ApprovalService {
     private final OverworkRepository overworkRepository;
     private final SoftwareUseRepository softwareUseRepository;
     private final WorkTypeRepository workTypeRepository;
-
     private final ApprovalRepresentRepository approvalRepresentRepository;
+    private final ApprovalAttachedRepository approvalAttachedRepository;
+    private final ApprovalEmployeeRepository approvalEmployeeRepository;
+
+    @Value("${image.image-dir}")
+    private String IMAGE_DIR;
+
+    @Value("${image.image-url}")
+    private String IMAGE_URL;
 
 
-    public ApprovalService(ModelMapper modelMapper, ApprovalDocRepository approvalDocRepository, ApprovalLineRepository approvalLineRepository, AdditionalApprovalLineRepository additionalApprovalLineRepository, OnLeaveRepository onLeaveRepository, OverworkRepository overworkRepository, SoftwareUseRepository softwareUseRepository, WorkTypeRepository workTypeRepository, ApprovalRepresentRepository approvalRepresentRepository) {
+    public ApprovalService(ModelMapper modelMapper, ApprovalDocRepository approvalDocRepository, ApprovalLineRepository approvalLineRepository, AdditionalApprovalLineRepository additionalApprovalLineRepository, OnLeaveRepository onLeaveRepository, OverworkRepository overworkRepository, SoftwareUseRepository softwareUseRepository, WorkTypeRepository workTypeRepository, ApprovalRepresentRepository approvalRepresentRepository, ApprovalAttachedRepository approvalAttachedRepository, ApprovalEmployeeRepository approvalEmployeeRepository) {
         this.modelMapper = modelMapper;
         this.approvalDocRepository = approvalDocRepository;
         this.approvalLineRepository = approvalLineRepository;
@@ -43,6 +52,8 @@ public class ApprovalService {
         this.softwareUseRepository = softwareUseRepository;
         this.workTypeRepository = workTypeRepository;
         this.approvalRepresentRepository = approvalRepresentRepository;
+        this.approvalAttachedRepository = approvalAttachedRepository;
+        this.approvalEmployeeRepository = approvalEmployeeRepository;
     }
 
 //    public ApprovalDocDTO selectInboxDoc(Long approvalDocCode) {
@@ -115,7 +126,10 @@ public class ApprovalService {
 //        overwork.setKindOfOverwork("연장 근로");
 //        overwork.setOverworkTitle("[개발1팀] 연장 근로 신청서");
 //    }
-// 기안 문서 정보 저장 - 휴가 신청서
+
+
+    // 기안 문서 정보 저장 - 휴가 신청서
+    @Transactional
 public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
     log.info("[ApprovalService] saving doc info started =====");
 
@@ -147,6 +161,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 }
 
     // 기안 문서 정보 저장 - 연장근로 신청서
+    @Transactional
     public ApprovalDoc saveOverworkApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
         ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
         approvalDoc.setApprovalForm("연장근로신청서");
@@ -168,6 +183,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 기안 문서 정보 저장 - SW 사용 신청서
+    @Transactional
     public ApprovalDoc saveSWUseveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
         ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
         approvalDoc.setApprovalForm("SW사용신청서");
@@ -189,6 +205,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 기안 문서 정보 저장 - 외근/출장/재택근무 신청서
+    @Transactional
     public ApprovalDoc saveWorkTypeApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
         ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
         approvalDoc.setApprovalForm("근무형태신청서");
@@ -210,6 +227,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 결재 문서 내용 추가 - 휴가 신청서
+    @Transactional
     public String saveOnLeaveDoc(ApprovalDoc savedApprovalDoc){
         // OnLeave 객체 생성 및 정보 설정
         OnLeave onLeave = new OnLeave();
@@ -227,6 +245,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
         return onLeave.getOnLeaveTitle();
     }
     // 결재 문서 내용 추가 - 연장근로 신청서
+    @Transactional
     public String saveOverworkDoc(ApprovalDoc savedApprovalDoc){
         Overwork overwork = new Overwork();
         overwork.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
@@ -243,6 +262,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 결재 문서 내용 추가 - SW 사용 신청서
+    @Transactional
     public String saveSWDoc(ApprovalDoc savedApprovalDoc){
         SoftwareUse softwareUse = new SoftwareUse();
         softwareUse.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
@@ -257,6 +277,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 결재 문서 내용 추가 - 외근/출장/재택근무 신청서
+    @Transactional
     public String saveWorkTypeDoc(ApprovalDoc savedApprovalDoc){
         WorkType workType = new WorkType();
         workType.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
@@ -273,6 +294,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 기안자 결재선 저장
+    @Transactional
     public void saveFirstApprovalLine(ApprovalDoc savedApprovalDoc, User user) {
         log.info("[ApprovalService] saving first approval line started =====");
         ApprovalLine approvalLine = new ApprovalLine();
@@ -303,6 +325,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 //    }
 
     // 추가 결재선 저장
+    @Transactional
     public void saveApprovalLines(ApprovalDoc savedApprovalDoc, List<Long> additionalApprovers) {
         log.info("[ApprovalService] saving line info started =====");
         for (int i = 0; i < additionalApprovers.size(); i++) {
@@ -317,6 +340,47 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
             additionalApprovalLineRepository.save(additionalApprovalLine);
         }
     }
+
+    // 파일 첨부
+//    @Transactional
+//    public String uploadImgToDoc(Long approvalDocCode, MultipartFile file){
+//
+//        LocalDateTime now = LocalDateTime.now();
+//        ApprovalAttached approvalAttached = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode)
+//                .orElseGet(() -> {
+//                    ApprovalAttached tempDocImg = new ApprovalAttached()
+//                            .setApprovalDocCode(approvalDocCode)
+//                            .setApprovalAttachedDate(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
+//                            .setWhetherDeletedApprovalAttached("N")
+//                            .builder();
+//                    approvalAttachedRepository.save(tempDocImg);
+//                    return tempDocImg;
+//                });
+//        return "첨부 성공";
+//        }
+
+    @Transactional
+    public void saveAttachement(ApprovalDoc savedApprovalDoc, MultipartFile file) {
+
+        if(file != null) {
+            String originalFileName = file.getOriginalFilename();
+
+            try {
+                String changedFileName = FileUploadUtils.saveFile(IMAGE_DIR, originalFileName, file);
+
+            ApprovalAttached approvalAttached = new ApprovalAttached();
+            approvalAttached.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
+            approvalAttached.setApprovalOgFile(originalFileName);
+            approvalAttached.setApprovalChangedFile(changedFileName);
+            approvalAttached.setWhetherDeletedApprovalAttached("N");
+
+            approvalAttachedRepository.save(approvalAttached);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     // 대리 결재 지정
     @Transactional
     public String setRepresent(ApprovalRepresentDTO approvalRepresentDTO, User user) {
@@ -340,6 +404,31 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 
         return "지정 성공";
     }
+
+    // 사원 정보 조회
+    public ApprovalEmployeeDTO findUserDetail(Long employeeCode) {
+        log.info("findUser Start =========");
+
+        ApprovalEmployee approvalEmployee = approvalEmployeeRepository.findByEmployeeCode(employeeCode);
+        ApprovalEmployeeDTO approvalEmployeeDTO = modelMapper.map(approvalEmployee, ApprovalEmployeeDTO.class);
+
+        log.info("findUser End ========");
+
+        return approvalEmployeeDTO;
+    }
+
+    // 로그인한 사원 조회
+    public ApprovalEmployee approvalUserInfo(User user) {
+
+        // 로그인한 사용자의 정보 가져오기
+        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
+
+        System.out.println("loginEmployee====" + loginEmployee);
+        ApprovalEmployee approvalEmployee = approvalEmployeeRepository.findByEmployeeCode((long) loginEmployee.getEmployeeCode());
+
+        return approvalEmployee;
+    }
+
 
     // 상신한 문서 조회
     public List<ApprovalDoc> findApprovalDocsByEmployeeCode(User user) {
@@ -452,6 +541,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 반려하기
+    @Transactional
     public String rejection(Long approvalDocCode, User user) {
 
         // 반려 대상 조회
@@ -491,6 +581,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 상신 문서 회수
+    @Transactional
     public String retrieval(Long approvalDocCode, User user) {
         // 문서 정보 가져오기
         ApprovalDoc approvalDoc = approvalDocRepository.findById(approvalDocCode).get();
@@ -647,6 +738,7 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     }
 
     // 임시 저장
+    @Transactional
     public ApprovalDoc temporarySaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
 
         ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
