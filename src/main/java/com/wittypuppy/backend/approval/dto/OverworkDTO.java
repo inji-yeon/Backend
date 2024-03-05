@@ -16,9 +16,9 @@ public class OverworkDTO {
     private Long approvalDocCode;
     private String overworkTitle;
     private String kindOfOverwork;
-    private Date overworkDate;
-    private Time overworkStartTime;
-    private Time overworkEndTime;
+    private String overworkDate;
+    private String overworkStartTime;
+    private String overworkEndTime;
     private String overworkReason;
     private String approvalTitle;
 }

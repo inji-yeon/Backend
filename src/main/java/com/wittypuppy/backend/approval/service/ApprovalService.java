@@ -5,10 +5,12 @@ import com.wittypuppy.backend.Employee.entity.LoginEmployee;
 import com.wittypuppy.backend.approval.dto.ApprovalDocDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalEmployeeDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalRepresentDTO;
+import com.wittypuppy.backend.approval.dto.OverworkDTO;
 import com.wittypuppy.backend.approval.entity.*;
 import com.wittypuppy.backend.approval.repository.*;
 import com.wittypuppy.backend.util.FileUploadUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.sql.ast.tree.expression.Over;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -140,9 +144,6 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
     // OnLeave 문서 저장 및 해당 문서의 제목 반환
     String onLeaveTitle = saveOnLeaveDoc(approvalDoc);
 
-    // OnLeave 문서의 제목을 ApprovalDoc에 설정
-    approvalDoc.setApprovalTitle(onLeaveTitle);
-
     // 사용자 정보 설정
     LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
     approvalDoc.setEmployeeCode(loginEmployee);
@@ -162,13 +163,9 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 
     // 기안 문서 정보 저장 - 연장근로 신청서
     @Transactional
-    public ApprovalDoc saveOverworkApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
-        ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
+    public String saveOverworkApprovalDoc(OverworkDTO overworkDTO, User user) {
+        ApprovalDoc approvalDoc = new ApprovalDoc();
         approvalDoc.setApprovalForm("연장근로신청서");
-
-        String overworkTitle = saveOverworkDoc(approvalDoc);
-
-        approvalDoc.setApprovalTitle(overworkTitle);
 
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
@@ -177,10 +174,56 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 
         approvalDoc.setWhetherSavingApproval("N");
 
+        approvalDoc.setApprovalTitle(overworkDTO.getOverworkTitle());
+
         saveFirstApprovalLine(approvalDoc, user);
 
-        return approvalDocRepository.save(approvalDoc);
+        System.out.println("approvalDoc = " + approvalDoc);
+
+        ApprovalDoc result = approvalDocRepository.save(approvalDoc);
+
+        System.out.println("result = " + result);
+
+        Overwork overwork = new Overwork();
+
+
+        overwork.setApprovalDocCode(result.getApprovalDocCode());
+        overwork.setOverworkTitle(overworkDTO.getOverworkTitle());
+        overwork.setKindOfOverwork(overworkDTO.getKindOfOverwork());
+        // 받은 문자열 형식의 날짜를 Date로 변환
+        Date overworkDate = java.sql.Date.valueOf(LocalDate.parse(overworkDTO.getOverworkDate()));
+        overwork.setOverworkDate(String.valueOf(overworkDate));
+
+        // 받은 문자열 형식의 시간을 Time으로 변환
+        Time overworkStartTime = java.sql.Time.valueOf(LocalTime.parse(overworkDTO.getOverworkStartTime()));
+        overwork.setOverworkStartTime(String.valueOf(overworkStartTime));
+
+        Time overworkEndTime = java.sql.Time.valueOf(LocalTime.parse(overworkDTO.getOverworkEndTime()));
+        overwork.setOverworkEndTime(String.valueOf(overworkEndTime));
+        overwork.setOverworkReason(overworkDTO.getOverworkReason());
+
+        System.out.println("overwork = " + overwork);
+        overworkRepository.save(overwork);
+
+        return "연장근로 신청서 기안 성공";
     }
+
+    // 결재 문서 내용 추가 - 연장근로 신청서
+//    @Transactional
+//    public String saveOverworkDoc(ApprovalDoc savedApprovalDoc){
+//        Overwork overwork = new Overwork();
+//        overwork.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
+//        overwork.setOverworkTitle("[개발1팀] 20240221 연장 근무 신청서");
+//        overwork.setKindOfOverwork("연장 근무");
+//        overwork.setOverworkDate(new Date(124,1,21));
+//        overwork.setOverworkStartTime(new Time(18,00,00));
+//        overwork.setOverworkEndTime(new Time(19,30,00));
+//        overwork.setOverworkReason("신규 버전 배포 ");
+//
+//        overworkRepository.save(overwork);
+//
+//        return overwork.getOverworkTitle();
+//    }
 
     // 기안 문서 정보 저장 - SW 사용 신청서
     @Transactional
@@ -189,8 +232,6 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
         approvalDoc.setApprovalForm("SW사용신청서");
 
         String SWUseTitle = saveSWDoc(approvalDoc);
-
-        approvalDoc.setApprovalTitle(SWUseTitle);
 
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
@@ -211,8 +252,6 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
         approvalDoc.setApprovalForm("근무형태신청서");
 
         String workTypeTitle = saveWorkTypeDoc(approvalDoc);
-
-        approvalDoc.setApprovalTitle(workTypeTitle);
 
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
@@ -243,22 +282,6 @@ public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User us
 
         // 저장한 OnLeave 문서의 제목 반환
         return onLeave.getOnLeaveTitle();
-    }
-    // 결재 문서 내용 추가 - 연장근로 신청서
-    @Transactional
-    public String saveOverworkDoc(ApprovalDoc savedApprovalDoc){
-        Overwork overwork = new Overwork();
-        overwork.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-        overwork.setOverworkTitle("[개발1팀] 20240221 연장 근무 신청서");
-        overwork.setKindOfOverwork("연장 근무");
-        overwork.setOverworkDate(new Date(124,1,21));
-        overwork.setOverworkStartTime(new Time(18,00,00));
-        overwork.setOverworkEndTime(new Time(19,30,00));
-        overwork.setOverworkReason("신규 버전 배포 ");
-
-        overworkRepository.save(overwork);
-
-        return overwork.getOverworkTitle();
     }
 
     // 결재 문서 내용 추가 - SW 사용 신청서

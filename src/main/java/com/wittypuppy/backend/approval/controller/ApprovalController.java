@@ -4,6 +4,7 @@ import com.wittypuppy.backend.Employee.dto.User;
 import com.wittypuppy.backend.approval.dto.ApprovalDocDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalEmployeeDTO;
 import com.wittypuppy.backend.approval.dto.ApprovalRepresentDTO;
+import com.wittypuppy.backend.approval.dto.OverworkDTO;
 import com.wittypuppy.backend.approval.entity.ApprovalDoc;
 import com.wittypuppy.backend.approval.service.ApprovalService;
 import com.wittypuppy.backend.common.dto.ResponseDTO;
@@ -65,14 +66,15 @@ public class ApprovalController {
     }
 
     @PostMapping("/submit-overwork")
-    public ResponseEntity<ResponseDTO> submitOverworkApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user){
-        ApprovalDoc savedApprovalDoc = approvalService.saveOverworkApprovalDoc(approvalDocDTO, user);
-        approvalService.saveOverworkDoc(savedApprovalDoc);
-        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
+    public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute  OverworkDTO overworkDTO, @AuthenticationPrincipal User user){
+
+        System.out.println("submit overwork start=======");
+
+        approvalService.saveOverworkApprovalDoc(overworkDTO, user);
 
         // 추가 결재자 목록
-        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
-        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+//        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
+//        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }

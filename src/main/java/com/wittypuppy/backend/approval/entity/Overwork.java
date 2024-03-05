@@ -30,13 +30,13 @@ public class Overwork {
     private String kindOfOverwork;
 
     @Column(name = "overwork_date")
-    private Date overworkDate;
+    private String overworkDate;
 
     @Column(name = "overwork_start_time")
-    private Time overworkStartTime;
+    private String overworkStartTime;
 
     @Column(name = "overwork_end_time")
-    private Time overworkEndTime;
+    private String overworkEndTime;
 
     @Column(name = "overwork_reason")
     private String overworkReason;
