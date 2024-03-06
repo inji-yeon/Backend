@@ -134,7 +134,7 @@ public class ApprovalService {
 
     // 기안 문서 정보 저장 - 휴가 신청서
     @Transactional
-public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
+    public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
     log.info("[ApprovalService] saving doc info started =====");
 
     // 저장할 ApprovalDoc 객체 생성
