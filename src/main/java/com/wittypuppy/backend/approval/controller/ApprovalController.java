@@ -66,15 +66,17 @@ public class ApprovalController {
     }
 
     @PostMapping("/submit-overwork")
-    public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute  OverworkDTO overworkDTO, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute OverworkDTO overworkDTO,
+                                                              @RequestParam("additionalApprovers") List<Long> additionalApprovers,
+                                                              @AuthenticationPrincipal User user){
 
         System.out.println("submit overwork start=======");
 
-        approvalService.saveOverworkApprovalDoc(overworkDTO, user);
+        ApprovalDoc savedApprovalDoc = approvalService.saveOverworkApprovalDoc(overworkDTO, user);
+        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
 
         // 추가 결재자 목록
-//        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
-//        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }

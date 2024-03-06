@@ -60,78 +60,6 @@ public class ApprovalService {
         this.approvalEmployeeRepository = approvalEmployeeRepository;
     }
 
-//    public ApprovalDocDTO selectInboxDoc(Long approvalDocCode) {
-//        log.info("[ApprovalService] selectInboxDoc start=====");
-//
-//        ApprovalDoc approvalDoc = approvalDocRepository.findById(approvalDocCode).get();
-//        ApprovalDocDTO approvalDocDTO = modelMapper.map(approvalDoc, ApprovalDocDTO.class);
-//
-//        log.info("[ApprovalService] selectInboxDoc End=====");
-//
-//        return approvalDocDTO;
-//    }
-
-//    @Transactional
-//    public String submitApproval(ApprovalDocDTO approvalDocDTO, EmployeeDTO employeeDTO) {
-//        log.info("[ApprovalService] submitApproval start=====");
-//
-//        int result = 0;
-//
-//        // 문서 정보 저장
-//        ApprovalDoc newDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
-//        newDoc.setApprovalRequestDate(LocalDateTime.now());
-//
-//        // 로그인한 사용자의 employeeCode를 가져와서 설정
-//        LoginEmployee loginEmployee = modelMapper.map(employeeDTO, LoginEmployee.class);
-//        newDoc.setEmployeeCode(loginEmployee);
-//
-//        approvalDocRepository.save(newDoc);
-//
-//        result = 1;
-//
-//    return result > 0 ? "상신 성공" : "상신 실패";
-//    }
-
-
-//    // 기안 문서 정보 저장
-//    public ApprovalDoc saveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
-//        log.info("[ApprovalService] saving doc info started =====");
-//
-//        ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
-//        approvalDoc.setApprovalForm("휴가신청서");
-//
-//        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
-//        approvalDoc.setEmployeeCode(loginEmployee);
-//
-//        approvalDoc.setApprovalRequestDate(LocalDateTime.now());
-//        approvalDoc.setWhetherSavingApproval("N");
-//        saveFirstApprovalLine(approvalDoc, user);
-//
-//        return approvalDocRepository.save(approvalDoc);
-//    }
-
-//    // 결재 문서 내용 추가 - 휴가 신청서
-//    public void saveOnLeaveDoc(ApprovalDoc savedApprovalDoc){
-//        OnLeave onLeave = new OnLeave();
-//        onLeave.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-//        onLeave.setKindOfOnLeave("연차");
-//        onLeave.setOnLeaveTitle("타이틀 테스트");
-//        onLeave.setOnLeaveReason("개인 사유");
-//        onLeave.setOnLeaveStartDate(new Date(124,1,19));
-//        onLeave.setOnLeaveEndDate(new Date(124,1,21));
-//
-//        onLeaveRepository.save(onLeave);
-//    }
-//
-//    // 결재 문서 내용 추가 - 연장근로 신청서
-//    public void saveOverworkDoc(ApprovalDoc savedApprovalDoc){
-//        Overwork overwork = new Overwork();
-//        overwork.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-//        overwork.setKindOfOverwork("연장 근로");
-//        overwork.setOverworkTitle("[개발1팀] 연장 근로 신청서");
-//    }
-
-
     // 기안 문서 정보 저장 - 휴가 신청서
     @Transactional
     public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
@@ -163,7 +91,7 @@ public class ApprovalService {
 
     // 기안 문서 정보 저장 - 연장근로 신청서
     @Transactional
-    public String saveOverworkApprovalDoc(OverworkDTO overworkDTO, User user) {
+    public ApprovalDoc saveOverworkApprovalDoc(OverworkDTO overworkDTO, User user) {
         ApprovalDoc approvalDoc = new ApprovalDoc();
         approvalDoc.setApprovalForm("연장근로신청서");
 
@@ -175,8 +103,6 @@ public class ApprovalService {
         approvalDoc.setWhetherSavingApproval("N");
 
         approvalDoc.setApprovalTitle(overworkDTO.getOverworkTitle());
-
-        saveFirstApprovalLine(approvalDoc, user);
 
         System.out.println("approvalDoc = " + approvalDoc);
 
@@ -205,25 +131,8 @@ public class ApprovalService {
         System.out.println("overwork = " + overwork);
         overworkRepository.save(overwork);
 
-        return "연장근로 신청서 기안 성공";
+        return result;
     }
-
-    // 결재 문서 내용 추가 - 연장근로 신청서
-//    @Transactional
-//    public String saveOverworkDoc(ApprovalDoc savedApprovalDoc){
-//        Overwork overwork = new Overwork();
-//        overwork.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-//        overwork.setOverworkTitle("[개발1팀] 20240221 연장 근무 신청서");
-//        overwork.setKindOfOverwork("연장 근무");
-//        overwork.setOverworkDate(new Date(124,1,21));
-//        overwork.setOverworkStartTime(new Time(18,00,00));
-//        overwork.setOverworkEndTime(new Time(19,30,00));
-//        overwork.setOverworkReason("신규 버전 배포 ");
-//
-//        overworkRepository.save(overwork);
-//
-//        return overwork.getOverworkTitle();
-//    }
 
     // 기안 문서 정보 저장 - SW 사용 신청서
     @Transactional
@@ -332,20 +241,6 @@ public class ApprovalService {
         approvalLine.setApprovalRejectedReason(null);
         approvalLineRepository.save(approvalLine);
     }
-
-//    // 추가 결재선 저장
-//    public void saveApprovalLines(ApprovalDoc savedApprovalDoc){
-//        log.info("[ApprovalService] saving line info started =====");
-//        AdditionalApprovalLine additionalApprovalLine = new AdditionalApprovalLine();
-//        additionalApprovalLine.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-//
-//        additionalApprovalLine.setEmployeeCode(32L);
-//        additionalApprovalLine.setApprovalProcessOrder(2L);
-//        additionalApprovalLine.setApprovalProcessStatus("대기");
-//        additionalApprovalLine.setApprovalRejectedReason(null);
-//
-//        additionalApprovalLineRepository.save(additionalApprovalLine);
-//    }
 
     // 추가 결재선 저장
     @Transactional
