@@ -68,6 +68,7 @@ public class ApprovalController {
     @PostMapping("/submit-overwork")
     public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute OverworkDTO overworkDTO,
                                                               @RequestParam("additionalApprovers") List<Long> additionalApprovers,
+                                                              @RequestParam("refViewers") List<Long> refViewers,
                                                               @AuthenticationPrincipal User user){
 
         System.out.println("submit overwork start=======");
@@ -77,6 +78,9 @@ public class ApprovalController {
 
         // 추가 결재자 목록
         approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
+        // 열람자 지정
+        approvalService.saveRefViewers(savedApprovalDoc, refViewers);
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }

@@ -10,7 +10,6 @@ import com.wittypuppy.backend.approval.entity.*;
 import com.wittypuppy.backend.approval.repository.*;
 import com.wittypuppy.backend.util.FileUploadUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.sql.ast.tree.expression.Over;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,8 @@ public class ApprovalService {
     private final ApprovalAttachedRepository approvalAttachedRepository;
     private final ApprovalEmployeeRepository approvalEmployeeRepository;
 
+    private final ApprovalReferenceRepository approvalReferenceRepository;
+
     @Value("${image.image-dir}")
     private String IMAGE_DIR;
 
@@ -46,7 +47,7 @@ public class ApprovalService {
     private String IMAGE_URL;
 
 
-    public ApprovalService(ModelMapper modelMapper, ApprovalDocRepository approvalDocRepository, ApprovalLineRepository approvalLineRepository, AdditionalApprovalLineRepository additionalApprovalLineRepository, OnLeaveRepository onLeaveRepository, OverworkRepository overworkRepository, SoftwareUseRepository softwareUseRepository, WorkTypeRepository workTypeRepository, ApprovalRepresentRepository approvalRepresentRepository, ApprovalAttachedRepository approvalAttachedRepository, ApprovalEmployeeRepository approvalEmployeeRepository) {
+    public ApprovalService(ModelMapper modelMapper, ApprovalDocRepository approvalDocRepository, ApprovalLineRepository approvalLineRepository, AdditionalApprovalLineRepository additionalApprovalLineRepository, OnLeaveRepository onLeaveRepository, OverworkRepository overworkRepository, SoftwareUseRepository softwareUseRepository, WorkTypeRepository workTypeRepository, ApprovalRepresentRepository approvalRepresentRepository, ApprovalAttachedRepository approvalAttachedRepository, ApprovalEmployeeRepository approvalEmployeeRepository, ApprovalReferenceRepository approvalReferenceRepository) {
         this.modelMapper = modelMapper;
         this.approvalDocRepository = approvalDocRepository;
         this.approvalLineRepository = approvalLineRepository;
@@ -58,6 +59,7 @@ public class ApprovalService {
         this.approvalRepresentRepository = approvalRepresentRepository;
         this.approvalAttachedRepository = approvalAttachedRepository;
         this.approvalEmployeeRepository = approvalEmployeeRepository;
+        this.approvalReferenceRepository = approvalReferenceRepository;
     }
 
     // 기안 문서 정보 저장 - 휴가 신청서
@@ -256,6 +258,20 @@ public class ApprovalService {
             additionalApprovalLine.setApprovalRejectedReason(null);
 
             additionalApprovalLineRepository.save(additionalApprovalLine);
+        }
+    }
+
+    // 열람자 지정
+    @Transactional
+    public void saveRefViewers(ApprovalDoc savedApprovalDoc, List<Long> refViewers) {
+        log.info("[ApprovalService] saving viewers started =====");
+        for (int i = 0; i < refViewers.size(); i++) {
+            ApprovalReference approvalReference = new ApprovalReference();
+            approvalReference.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
+            approvalReference.setEmployeeCode(refViewers.get(i));
+            approvalReference.setWhetherCheckedApproval("N");
+
+            approvalReferenceRepository.save(approvalReference);
         }
     }
 

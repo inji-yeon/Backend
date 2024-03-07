@@ -17,13 +17,11 @@ public class ApprovalReference {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long approvalReferenceCode;
 
-    @JoinColumn(name = "approval_document_code")
-    @ManyToOne
-    private ApprovalDoc approvalDoc;
+    @Column(name = "approval_document_code")
+    private Long approvalDocCode;
 
-    @JoinColumn(name = "employee_code")
-    @ManyToOne
-    private LoginEmployee loginEmployee;
+    @Column(name = "employee_code")
+    private Long employeeCode;
 
     @Column(name = "whether_checked_approval")
     private String whetherCheckedApproval;

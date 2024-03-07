@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 public class ApprovalReferenceDTO {
     private Long approvalReferenceCode;
-    private ApprovalDocDTO approvalDocDTO;
-    private User user;
+    private Long approvalDocCode;
+    private Long employeeCode;
     private String whetherCheckedApproval;
 }
