@@ -7,7 +7,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @ToString
@@ -28,31 +27,53 @@ public class ApprovalAttached {
     @Column(name = "approval_changed_file")
     private String approvalChangedFile;
 
-
     @Column(name = "whether_deleted_approval_attached")
     private String whetherDeletedApprovalAttached;
 
-    public ApprovalAttached setApprovalDocCode(Long approvalDocCode){
+    @Column(name = "apfilepath_origin")
+    private String apFilePathOrigin;
+
+    @Column(name = "apfilepath_change")
+    private String apFilePathChange;
+
+    public ApprovalAttached() {
+    }
+
+    public ApprovalAttached approvalAttachedCode(Long approvalAttachedCode){
+        this.approvalAttachedCode = approvalAttachedCode;
+        return this;
+    }
+    public ApprovalAttached approvalDocCode(Long approvalDocCode) {
         this.approvalDocCode = approvalDocCode;
         return this;
     }
 
-    public ApprovalAttached setApprovalOgFile(String approvalChangedFile){
+    public ApprovalAttached approvalOgFile(String approvalOgFile) {
         this.approvalOgFile = approvalOgFile;
         return this;
     }
 
-    public ApprovalAttached setApprovalChangedFile(String approvalChangedFile){
+    public ApprovalAttached approvalChangedFile(String approvalChangedFile) {
         this.approvalChangedFile = approvalChangedFile;
         return this;
     }
 
-    public ApprovalAttached setWhetherDeletedApprovalAttached(String whetherDeletedApprovalAttached){
+    public ApprovalAttached whetherDeletedApprovalAttached(String whetherDeletedApprovalAttached) {
         this.whetherDeletedApprovalAttached = whetherDeletedApprovalAttached;
         return this;
     }
 
-    public ApprovalAttached builder() {
-        return new ApprovalAttached(approvalAttachedCode, approvalDocCode, approvalOgFile, approvalChangedFile, whetherDeletedApprovalAttached);
+    public ApprovalAttached apFilePathOrigin(String apFilePathOrigin) {
+        this.apFilePathOrigin = apFilePathOrigin;
+        return this;
     }
+    public ApprovalAttached apFilePathChange(String apFilePathChange) {
+        this.apFilePathChange = apFilePathChange;
+        return this;
+    }
+
+    public ApprovalAttached build() {
+        return new ApprovalAttached(approvalAttachedCode, approvalDocCode, approvalOgFile, approvalChangedFile, whetherDeletedApprovalAttached, apFilePathOrigin, apFilePathChange);
+    }
+
 }

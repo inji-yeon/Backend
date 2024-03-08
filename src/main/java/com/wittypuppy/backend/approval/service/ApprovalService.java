@@ -276,43 +276,20 @@ public class ApprovalService {
     }
 
     // 파일 첨부
-//    @Transactional
-//    public String uploadImgToDoc(Long approvalDocCode, MultipartFile file){
-//
-//        LocalDateTime now = LocalDateTime.now();
-//        ApprovalAttached approvalAttached = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode)
-//                .orElseGet(() -> {
-//                    ApprovalAttached tempDocImg = new ApprovalAttached()
-//                            .setApprovalDocCode(approvalDocCode)
-//                            .setApprovalAttachedDate(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
-//                            .setWhetherDeletedApprovalAttached("N")
-//                            .builder();
-//                    approvalAttachedRepository.save(tempDocImg);
-//                    return tempDocImg;
-//                });
-//        return "첨부 성공";
-//        }
-
     @Transactional
-    public void saveAttachement(ApprovalDoc savedApprovalDoc, MultipartFile file) {
+    public void saveAttachement(ApprovalDoc savedApprovalDoc, MultipartFile file) throws IOException {
+        String originalFileName = file.getOriginalFilename();
+        String storedFileName = FileUploadUtils.saveFile(IMAGE_DIR, originalFileName, file);
 
-        if(file != null) {
-            String originalFileName = file.getOriginalFilename();
+        ApprovalAttached approvalAttached = new ApprovalAttached();
+        approvalAttached.approvalDocCode(savedApprovalDoc.getApprovalDocCode());
+        approvalAttached.approvalOgFile(originalFileName);
+        approvalAttached.approvalChangedFile(storedFileName);
+        approvalAttached.whetherDeletedApprovalAttached("N");
+        approvalAttached.apFilePathOrigin(IMAGE_DIR);
+        approvalAttached.apFilePathChange(IMAGE_DIR + "/" + storedFileName);
 
-            try {
-                String changedFileName = FileUploadUtils.saveFile(IMAGE_DIR, originalFileName, file);
-
-            ApprovalAttached approvalAttached = new ApprovalAttached();
-            approvalAttached.setApprovalDocCode(savedApprovalDoc.getApprovalDocCode());
-            approvalAttached.setApprovalOgFile(originalFileName);
-            approvalAttached.setApprovalChangedFile(changedFileName);
-            approvalAttached.setWhetherDeletedApprovalAttached("N");
-
-            approvalAttachedRepository.save(approvalAttached);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        approvalAttachedRepository.save(approvalAttached);
     }
 
     // 대리 결재 지정

@@ -11,8 +11,10 @@ import java.util.Date;
 @ToString
 public class ApprovalAttachedDTO {
     private Long approvalAttachedCode;
-    private ApprovalDocDTO approvalDocDTO;
+    private Long approvalDocCode;
     private String approvalOgFile;
     private String approvalChangedFile;
     private String whetherDeletedApprovalAttached;
+    private String apFilePathOrigin;
+    private String apFilePathChange;
 }

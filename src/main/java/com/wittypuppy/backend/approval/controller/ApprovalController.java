@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,8 +48,6 @@ public class ApprovalController {
         List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
         approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
-        approvalService.saveAttachement(savedApprovalDoc, file);
-
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
@@ -68,8 +67,9 @@ public class ApprovalController {
     @PostMapping("/submit-overwork")
     public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute OverworkDTO overworkDTO,
                                                               @RequestParam("additionalApprovers") List<Long> additionalApprovers,
-                                                              @RequestParam("refViewers") List<Long> refViewers,
-                                                              @AuthenticationPrincipal User user){
+                                                              @RequestParam(value = "refViewers", required = false) List<Long> refViewers,
+                                                              @RequestParam(value = "file", required = false) MultipartFile file,
+                                                              @AuthenticationPrincipal User user) throws IOException {
 
         System.out.println("submit overwork start=======");
 
@@ -80,7 +80,14 @@ public class ApprovalController {
         approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
         // 열람자 지정
-        approvalService.saveRefViewers(savedApprovalDoc, refViewers);
+        if (refViewers != null) {
+            approvalService.saveRefViewers(savedApprovalDoc, refViewers);
+        }
+
+        // 파일 첨부
+        if (file != null) {
+            approvalService.saveAttachement(savedApprovalDoc, file);
+        }
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
