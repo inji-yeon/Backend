@@ -68,7 +68,7 @@ public class ApprovalController {
     public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute OverworkDTO overworkDTO,
                                                               @RequestParam("additionalApprovers") List<Long> additionalApprovers,
                                                               @RequestParam(value = "refViewers", required = false) List<Long> refViewers,
-                                                              @RequestParam(value = "file", required = false) MultipartFile file,
+                                                              @RequestParam(value = "file", required = false) MultipartFile[] files,
                                                               @AuthenticationPrincipal User user) throws IOException {
 
         System.out.println("submit overwork start=======");
@@ -85,9 +85,13 @@ public class ApprovalController {
         }
 
         // 파일 첨부
-        if (file != null) {
-            approvalService.saveAttachement(savedApprovalDoc, file);
+        if (files != null && files.length > 0) {
+            for (MultipartFile file : files) {
+                approvalService.saveAttachement(savedApprovalDoc, file);
+            }
         }
+
+        System.out.println("files ===== " + files);
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
@@ -117,6 +121,7 @@ public class ApprovalController {
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
+
     @Tag(name = "상신함 - 상신 문서 조회", description = "로그인한 사용자가 상신한 문서 목록 조회")
     @GetMapping("/outbox-approval")
     public ResponseEntity<ResponseDTO> outboxApproval(@AuthenticationPrincipal User user) {
