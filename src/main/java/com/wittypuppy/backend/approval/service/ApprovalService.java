@@ -6,20 +6,19 @@ import com.wittypuppy.backend.approval.dto.*;
 import com.wittypuppy.backend.approval.entity.*;
 import com.wittypuppy.backend.approval.repository.*;
 import com.wittypuppy.backend.util.FileUploadUtils;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -342,18 +341,28 @@ public class ApprovalService {
     // 파일 첨부
     @Transactional
     public void saveAttachement(ApprovalDoc savedApprovalDoc, MultipartFile file) throws IOException {
-        String originalFileName = file.getOriginalFilename();
-        String storedFileName = FileUploadUtils.saveFile(IMAGE_DIR, originalFileName, file);
-
         ApprovalAttached approvalAttached = new ApprovalAttached();
-        approvalAttached.approvalDocCode(savedApprovalDoc.getApprovalDocCode());
-        approvalAttached.approvalOgFile(originalFileName);
-        approvalAttached.approvalChangedFile(storedFileName);
-        approvalAttached.whetherDeletedApprovalAttached("N");
-        approvalAttached.apFilePathOrigin(IMAGE_DIR);
-        approvalAttached.apFilePathChange(IMAGE_DIR + "/" + storedFileName);
+        String originalFileName = file.getOriginalFilename();
+        String replaceFileName = null;
+
+        replaceFileName = FileUploadUtils.saveFile(IMAGE_DIR, originalFileName, file);
+        approvalAttached = approvalAttached.approvalOgFile(originalFileName)
+                        .approvalChangedFile(replaceFileName)
+                        .approvalDocCode(savedApprovalDoc.getApprovalDocCode())
+                        .whetherDeletedApprovalAttached("N").build();
 
         approvalAttachedRepository.save(approvalAttached);
+    }
+
+    // 첨부파일 다운로드
+    public byte[] downloadFile(String fileName) throws IOException {
+        Path filePath = Paths.get(IMAGE_DIR).resolve(fileName);
+
+        if (!Files.exists(filePath)) {
+            throw new FileNotFoundException("File not found: " + fileName);
+        }
+
+        return Files.readAllBytes(filePath);
     }
 
     // 대리 결재 지정

@@ -10,15 +10,23 @@ import com.wittypuppy.backend.approval.service.ApprovalService;
 import com.wittypuppy.backend.common.dto.ResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+
 
 @Tag(name = "전자 결재")
 @RestController
@@ -50,6 +58,21 @@ public class ApprovalController {
         approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
 
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
+    }
+
+    // 첨부 파일 다운로드
+    @GetMapping("/attachment/{fileName}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable String fileName) {
+        try {
+            byte[] fileContent = approvalService.downloadFile(fileName);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", fileName);
+            return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     // 사원 정보 조회

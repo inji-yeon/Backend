@@ -3,6 +3,12 @@ package com.wittypuppy.backend.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 @Slf4j
 public class FileUploadUtils {
@@ -52,5 +59,20 @@ public class FileUploadUtils {
         }
 
         return result;
+    }
+
+    public static ResponseEntity<Optional<Object>> downloadFile(String uploadDir, String fileName) throws IOException {
+        Path filePath = Paths.get(uploadDir).resolve(fileName);
+        Resource resource = new InputStreamResource(Files.newInputStream(filePath));
+
+        if (resource.exists() || resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .body(Optional.of(resource));
+        } else {
+            ResponseEntity<Optional<Object>> body = ResponseEntity.status(HttpStatus.NOT_FOUND).body(Optional.ofNullable(null));
+            return body;
+        }
     }
 }
