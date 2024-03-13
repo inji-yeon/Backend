@@ -32,5 +32,5 @@ public class SoftwareUse {
     private String softwareReason;
 
     @Column(name = "software_start_date")
-    private Date softwareStartDate;
+    private String softwareStartDate;
 }

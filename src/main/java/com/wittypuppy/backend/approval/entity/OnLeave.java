@@ -34,10 +34,10 @@ public class OnLeave {
     private String kindOfOnLeave;
 
     @Column(name = "on_leave_start_date")
-    private Date onLeaveStartDate;
+    private String onLeaveStartDate;
 
     @Column(name = "on_leave_end_date")
-    private Date onLeaveEndDate;
+    private String onLeaveEndDate;
 
     @Column(name = "on_leave_reason")
     private String onLeaveReason;

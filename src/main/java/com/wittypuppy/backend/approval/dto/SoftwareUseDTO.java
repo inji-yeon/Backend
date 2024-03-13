@@ -16,6 +16,6 @@ public class SoftwareUseDTO {
     private String softwareTitle;
     private String kindOfSoftware;
     private String softwareReason;
-    private Date softwareStartDate;
+    private String softwareStartDate;
     private String approvalTitle;
 }

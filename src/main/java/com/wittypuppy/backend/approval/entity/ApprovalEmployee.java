@@ -19,6 +19,10 @@ public class ApprovalEmployee {
     @Column(name = "department_code")
     private Long departmentCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_code", referencedColumnName = "department_code", insertable = false, updatable = false)
+    private ApprovalDepartment department;
+
     @Column(name = "job_code")
     private Long jobCode;
 

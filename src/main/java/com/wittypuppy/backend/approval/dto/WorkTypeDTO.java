@@ -15,8 +15,8 @@ public class WorkTypeDTO {
     private Long approvalDocCode;
     private String workTypeForm;
     private String workTypeTitle;
-    private Date workTypeStartDate;
-    private Date workTypeEndDate;
+    private String workTypeStartDate;
+    private String workTypeEndDate;
     private String workTypePlace;
     private String workTypeReason;
     private String approvalTitle;

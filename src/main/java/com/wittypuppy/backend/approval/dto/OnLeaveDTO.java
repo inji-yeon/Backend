@@ -16,8 +16,8 @@ public class OnLeaveDTO {
     private String onLeaveTitle;
     private User onLeaveCount;
     private String kindOfOnLeave;
-    private Date onLeaveStartDate;
-    private Date onLeaveEndDate;
+    private String onLeaveStartDate;
+    private String onLeaveEndDate;
     private String onLeaveReason;
     private String approvalTitle;
 }

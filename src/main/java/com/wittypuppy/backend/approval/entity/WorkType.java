@@ -29,10 +29,10 @@ public class WorkType {
     private String workTypeTitle;
 
     @Column(name = "work_type_start_date")
-    private Date workTypeStartDate;
+    private String workTypeStartDate;
 
     @Column(name = "work_type_end_date")
-    private Date workTypeEndDate;
+    private String workTypeEndDate;
 
     @Column(name = "work_type_place")
     private String workTypePlace;

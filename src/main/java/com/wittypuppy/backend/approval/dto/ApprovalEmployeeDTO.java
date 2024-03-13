@@ -14,4 +14,5 @@ public class ApprovalEmployeeDTO {
     private String employeeId;
     private String employeeName;
     private Long employeeOnLeaveCount;
+    private ApprovalDepartmentDTO department; // 부서 정보를 포함하는 DTO
 }

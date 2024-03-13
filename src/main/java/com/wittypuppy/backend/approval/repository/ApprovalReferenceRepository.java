@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface ApprovalReferenceRepository extends JpaRepository<ApprovalReference, Long> {
 
+    List<ApprovalReference> findByApprovalDocCode(Long approvalDocCode);
 }

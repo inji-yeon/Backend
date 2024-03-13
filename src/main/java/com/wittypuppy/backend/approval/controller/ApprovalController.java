@@ -32,10 +32,11 @@ public class ApprovalController {
         this.approvalService = approvalService;
     }
 
-//    @GetMapping("/{approvalDocCode}")
-//    public ResponseEntity<ResponseDTO> selectInboxDoc(@PathVariable Long approvalDocCode){
-//        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.selectInboxDoc(approvalDocCode)));
-//    }
+    // 연장근로 문서 조회
+    @GetMapping("overwork/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectOverworkDoc(@PathVariable Long approvalDocCode){
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetails(approvalDocCode)));
+    }
 
     @Tag(name = "문서 상신", description = "결재 문서 상신하기")
     @PostMapping("/submit-on-leave")
