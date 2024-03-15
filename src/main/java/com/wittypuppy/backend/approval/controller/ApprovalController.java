@@ -1,10 +1,7 @@
 package com.wittypuppy.backend.approval.controller;
 
 import com.wittypuppy.backend.Employee.dto.User;
-import com.wittypuppy.backend.approval.dto.ApprovalDocDTO;
-import com.wittypuppy.backend.approval.dto.ApprovalEmployeeDTO;
-import com.wittypuppy.backend.approval.dto.ApprovalRepresentDTO;
-import com.wittypuppy.backend.approval.dto.OverworkDTO;
+import com.wittypuppy.backend.approval.dto.*;
 import com.wittypuppy.backend.approval.entity.ApprovalDoc;
 import com.wittypuppy.backend.approval.service.ApprovalService;
 import com.wittypuppy.backend.common.dto.ResponseDTO;
@@ -190,10 +187,10 @@ public class ApprovalController {
 
     @Tag(name = "상신 문서 회수", description = "로그인한 사용자가 상신한 문서 중, 첫 번째 결재자가 아직 결재하지 않은 문서 회수하기")
     @PutMapping("/retrieval/{approvalDocCode}")
-    public ResponseEntity<String> retrieval(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user){
-        String result = approvalService.retrieval(approvalDocCode, user);
-        System.out.println("result ========== " + result);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ApprovalResultDTO> retrieval(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user){
+        ApprovalResultDTO response = approvalService.retrieval(approvalDocCode, user);
+        System.out.println("response ========== " + response);
+        return ResponseEntity.ok(response);
     }
 
     @Tag(name = "결재 진행 중인 문서 조회", description = "로그인한 사용자가 결재자로 지정된 문서 중, 결재 프로세스가 완료되지 않은 문서 목록 조회")

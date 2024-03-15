@@ -9,9 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ApprovalDocRepository extends JpaRepository<ApprovalDoc, Long> {
-    List<ApprovalDoc> findByEmployeeCode(LoginEmployee loginEmployee);
-
-    List<ApprovalDoc> findByApprovalForm(String approvalForm);
+    List<ApprovalDoc> findByEmployeeCodeOrderByApprovalDocCodeDesc(LoginEmployee loginEmployee);
 
     @Query(value =
             "SELECT " +

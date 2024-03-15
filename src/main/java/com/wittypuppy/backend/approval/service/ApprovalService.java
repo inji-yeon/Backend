@@ -410,7 +410,7 @@ public class ApprovalService {
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
-        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCode(loginEmployee);
+        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
 
         return outboxDocList;
     }
@@ -556,7 +556,7 @@ public class ApprovalService {
 
     // 상신 문서 회수
     @Transactional
-    public String retrieval(Long approvalDocCode, User user) {
+    public ApprovalResultDTO retrieval(Long approvalDocCode, User user) {
         // 문서 정보 가져오기
         ApprovalDoc approvalDoc = approvalDocRepository.findById(approvalDocCode).get();
         System.out.println("approvalDoc.getEmployeeCode().getEmployeeCode() = " + approvalDoc.getEmployeeCode().getEmployeeCode());
@@ -568,9 +568,13 @@ public class ApprovalService {
         Long loginemployeeCode = (long) loginEmployee.getEmployeeCode();
         System.out.println("loginemployeeCode = " + loginemployeeCode);
 
+        ApprovalResultDTO response = new ApprovalResultDTO();
+
         // 해당 문서 employeeCode가 로그인한 사용자와 일치하는지 확인
         if (!employeeCode.equals(loginemployeeCode)) {
-            return "회수 대상이 아닙니다.";
+            response.setSuccess(false);
+            response.setMessage("회수 대상이 아닙니다.");
+            return response;
         }
 
         // 해당 문서의 모든 approvalLine 가져오기
@@ -580,7 +584,9 @@ public class ApprovalService {
         for (AdditionalApprovalLine approvalLine : approvalLines) {
             String status = approvalLine.getApprovalProcessStatus();
             if (!status.equals("기안") && !status.equals("대기")) {
-                return "미결 문서가 아닙니다.";
+                response.setSuccess(false);
+                response.setMessage("미결 문서가 아닙니다.");
+                return response;
             }
         }
 
@@ -591,7 +597,9 @@ public class ApprovalService {
             additionalApprovalLineRepository.save(approvalLine);
         }
 
-        return "회수 성공";
+        response.setSuccess(true);
+        response.setMessage("기안 문서가 회수되었습니다.");
+        return response;
     }
 //
 //    public void saveApprovalInfo(ApprovalDoc approvalDoc) {
@@ -636,7 +644,7 @@ public class ApprovalService {
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
-        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCode(loginEmployee);
+        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
 
         // 결재 상태 중에 대기가 존재하는 문서 리스트 조회
         List<ApprovalDoc> onProcessDocList = new ArrayList<>();
@@ -656,7 +664,7 @@ public class ApprovalService {
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
-        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCode(loginEmployee);
+        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
 
         List<ApprovalDoc> finishedDocListInOutbox = new ArrayList<>();
 
@@ -678,7 +686,7 @@ public class ApprovalService {
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
-        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCode(loginEmployee);
+        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
 
         // 결재 상태 중에 반려가 존재하는 문서 리스트 조회
         List<ApprovalDoc> rejectedDocList = new ArrayList<>();
@@ -698,7 +706,7 @@ public class ApprovalService {
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
-        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCode(loginEmployee);
+        List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
 
         // 결재 상태 중에 회수가 존재하는 문서 리스트 조회
         List<ApprovalDoc> retrievedDocList = new ArrayList<>();
