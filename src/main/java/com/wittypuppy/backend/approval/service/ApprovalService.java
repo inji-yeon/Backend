@@ -118,10 +118,10 @@ public class ApprovalService {
 
         Overwork overwork = new Overwork();
 
-
         overwork.setApprovalDocCode(result.getApprovalDocCode());
         overwork.setOverworkTitle(overworkDTO.getOverworkTitle());
         overwork.setKindOfOverwork(overworkDTO.getKindOfOverwork());
+
         // 받은 문자열 형식의 날짜를 Date로 변환
         Date overworkDate = java.sql.Date.valueOf(LocalDate.parse(overworkDTO.getOverworkDate()));
         overwork.setOverworkDate(String.valueOf(overworkDate));
@@ -402,15 +402,14 @@ public class ApprovalService {
 
 
     // 로그인한 사원 조회
-    public ApprovalEmployee approvalUserInfo(User user) {
+    public Long approvalUserInfo(User user) {
 
         // 로그인한 사용자의 정보 가져오기
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
 
-        System.out.println("loginEmployee====" + loginEmployee);
-        ApprovalEmployee approvalEmployee = approvalEmployeeRepository.findByEmployeeCode((long) loginEmployee.getEmployeeCode());
+        Long loginEmployeeCode = Long.valueOf(loginEmployee.getEmployeeCode());
 
-        return approvalEmployee;
+        return loginEmployeeCode;
     }
 
 
@@ -731,20 +730,68 @@ public class ApprovalService {
         return retrievedDocList;
     }
 
-    // 임시 저장
+    // 임시 저장 - 연장근로
     @Transactional
-    public ApprovalDoc temporarySaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
-
-        ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
-        approvalDoc.setApprovalForm("임시저장문서");
+    public ApprovalDoc temporarySaveOverwork(OverworkDTO overworkDTO, User user) {
+        ApprovalDoc approvalDoc = new ApprovalDoc();
+        approvalDoc.setApprovalForm("연장근로신청서");
 
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
 
         approvalDoc.setApprovalRequestDate(LocalDateTime.now());
+
         approvalDoc.setWhetherSavingApproval("Y");
 
-        return approvalDocRepository.save(approvalDoc);
+        System.out.println("overworkDTO.getOverworkTitle() = " + overworkDTO.getOverworkTitle());
+        approvalDoc.setApprovalTitle(overworkDTO.getOverworkTitle());
+
+        System.out.println("approvalDoc = " + approvalDoc);
+
+        ApprovalDoc result = approvalDocRepository.save(approvalDoc);
+
+        System.out.println("result = " + result);
+
+        Overwork overwork = new Overwork();
+
+        overwork.setApprovalDocCode(result.getApprovalDocCode());
+        overwork.setOverworkTitle(overworkDTO.getOverworkTitle());
+        overwork.setKindOfOverwork(overworkDTO.getKindOfOverwork());
+
+
+        // 받은 문자열 형식의 날짜를 Date로 변환
+        System.out.println("overwork.getOverworkDate()1 = " + overwork.getOverworkDate());
+        if (overworkDTO.getOverworkDate() != null && !overworkDTO.getOverworkDate().isEmpty()) {
+            System.out.println("overwork.getOverworkDate()2 = " + overwork.getOverworkDate());
+            Date overworkDate = java.sql.Date.valueOf(LocalDate.parse(overworkDTO.getOverworkDate()));
+            System.out.println("overworkDate = " + overworkDate);
+            overwork.setOverworkDate(String.valueOf(overworkDate));
+        } else {
+            overwork.setOverworkDate("");
+        }
+
+
+        // 받은 문자열 형식의 시간을 Time으로 변환
+        if (overworkDTO.getOverworkStartTime() != null && !overworkDTO.getOverworkStartTime().isEmpty()) {
+            Time overworkStartTime = java.sql.Time.valueOf(LocalTime.parse(overworkDTO.getOverworkStartTime()));
+            overwork.setOverworkStartTime(String.valueOf(overworkStartTime));
+        } else {
+            overwork.setOverworkStartTime("");
+        }
+
+        if (overworkDTO.getOverworkEndTime() != null && !overworkDTO.getOverworkEndTime().isEmpty()) {
+            Time overworkEndTime = java.sql.Time.valueOf(LocalTime.parse(overworkDTO.getOverworkEndTime()));
+            overwork.setOverworkEndTime(String.valueOf(overworkEndTime));
+        } else {
+            overwork.setOverworkEndTime("");
+        }
+
+        overwork.setOverworkReason(overworkDTO.getOverworkReason());
+
+        System.out.println("overwork = " + overwork);
+        overworkRepository.save(overwork);
+
+        return result;
     }
 
     // 임시 저장 리스트 조회

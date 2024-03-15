@@ -221,10 +221,12 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalDocs));
     }
 
-    @Tag(name = "임시 저장", description = "결재 문서 임시 저장하기")
-    @PostMapping("/save-approval")
-    public ResponseEntity<ResponseDTO> saveApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user){
-        approvalService.temporarySaveApprovalDoc(approvalDocDTO, user);
+    // 임시 저장 - 연장근로
+    @PostMapping("/temp-save-overwork")
+    public ResponseEntity<ResponseDTO> temporarySaveOverwork(@ModelAttribute OverworkDTO overworkDTO, @AuthenticationPrincipal User user){
+        System.out.println("save overwork start=======");
+
+        ApprovalDoc savedApprovalDoc = approvalService.temporarySaveOverwork(overworkDTO, user);
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "저장 성공"));
     }
 
