@@ -200,6 +200,16 @@ public class ApprovalService {
         }
         docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
 
+        // 회수 가능 여부 확인
+        for (AdditionalApprovalLine approvalLine : additionalApprovalLines) {
+            String status = approvalLine.getApprovalProcessStatus();
+            if (status.equals("결재") || status.equals("반려") || status.equals("회수")) {
+                docDetailsDTO.setAvailability(false);
+                break;
+            } else if (status.equals("기안") || status.equals("대기")){
+                docDetailsDTO.setAvailability(true);
+            }
+        }
         System.out.println("DocDetailsDTO: " + docDetailsDTO);
         return docDetailsDTO;
     }
@@ -411,6 +421,7 @@ public class ApprovalService {
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
         List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
+        System.out.println("outboxDocList = " + outboxDocList);
 
         return outboxDocList;
     }
@@ -585,7 +596,7 @@ public class ApprovalService {
             String status = approvalLine.getApprovalProcessStatus();
             if (!status.equals("기안") && !status.equals("대기")) {
                 response.setSuccess(false);
-                response.setMessage("미결 문서가 아닙니다.");
+                response.setMessage("회수 대상이 아닙니다. 결재 상태를 확인해주세요.");
                 return response;
             }
         }
@@ -645,7 +656,8 @@ public class ApprovalService {
 
         // 해당 사용자의 결재 상신 문서 리스트 조회
         List<ApprovalDoc> outboxDocList = approvalDocRepository.findByEmployeeCodeOrderByApprovalDocCodeDesc(loginEmployee);
-
+        System.out.println("outboxDocList = " + outboxDocList);
+        
         // 결재 상태 중에 대기가 존재하는 문서 리스트 조회
         List<ApprovalDoc> onProcessDocList = new ArrayList<>();
         for(ApprovalDoc approvalDoc : outboxDocList) {

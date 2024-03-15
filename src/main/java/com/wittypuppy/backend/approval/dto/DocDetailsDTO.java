@@ -25,4 +25,6 @@ public class DocDetailsDTO {
     private List<AdditionalApprovalLine> additionalApprovalLines;
     private List<ApprovalReference> approvalReferences;
     private List<ApprovalAttached> approvalAttachedFiles;
+
+    private boolean availability;
 }
