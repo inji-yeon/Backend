@@ -152,8 +152,8 @@ public class ApprovalService {
         return approvalEmployeeDTO;
     }
 
-    // 문서 조회 - 연장근로 신청서
-    public DocDetailsDTO overworkDetails(Long approvalDocCode){
+    // 결재 진행함 문서 조회 - 연장근로 신청서
+    public DocDetailsDTO overworkDetailsOP(Long approvalDocCode){
         // 문서 정보 가져오기
         ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
         System.out.println("savedOverworkDoc = " + savedOverworkDoc);
@@ -210,6 +210,110 @@ public class ApprovalService {
                 docDetailsDTO.setAvailability(true);
             }
         }
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
+    // 결재 완료함 문서 조회 - 연장근로 신청서
+    public Object overworkDetailsFin(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOverworkDoc = " + savedOverworkDoc);
+
+        // overwork 정보 가져오기
+        Overwork overwork = overworkRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("overwork = " + overwork);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOverworkDoc);
+        docDetailsDTO.setOverwork(overwork);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
+    // 결재 대기함 문서 조회 - 연장근로
+    public Object overworkDetailsInbox(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOverworkDoc = " + savedOverworkDoc);
+
+        // overwork 정보 가져오기
+        Overwork overwork = overworkRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("overwork = " + overwork);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOverworkDoc);
+        docDetailsDTO.setOverwork(overwork);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
         System.out.println("DocDetailsDTO: " + docDetailsDTO);
         return docDetailsDTO;
     }
@@ -469,45 +573,20 @@ public class ApprovalService {
 
     // 결재하기
     @Transactional
-    public String approvement(Long approvalDocCode, User user) {
+    public ApprovalResultDTO approvement(Long approvalDocCode, User user) {
 
         // 결재 대상 조회
         Long approvalSubject = additionalApprovalLineRepository.approvalSubjectEmployeeCode(approvalDocCode);
-
-        System.out.println("approvalSubject ========== " + approvalSubject);
-        System.out.println("approvalSubject.getClass() = " + approvalSubject.getClass());
 
         // 로그인한 사용자의 정보 가져오기
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         Long employeeCode = (long) loginEmployee.getEmployeeCode();
 
-        System.out.println("loginEmployee.getEmployeeCode() = " + loginEmployee.getEmployeeCode());
-        System.out.println("loginEmployee.getClass() = " + loginEmployee.getClass());
-
-        System.out.println("employeeCode ======== " + employeeCode);
-
-        // 대리 결재 여부 확인
-        ApprovalRepresent approvalRepresent = approvalRepresentRepository.findByRepresentative(employeeCode);
-
-        System.out.println("approvalRepresent = " + approvalRepresent);
-        System.out.println("approvalRepresent.getRepresentStatus() = " + approvalRepresent.getRepresentStatus());
-        System.out.println("approvalRepresent.getAssignee() = " + approvalRepresent.getAssignee());
-
-        if (approvalRepresent.getRepresentStatus().equals("Y") && approvalRepresent.getRepresentative() == loginEmployee.getEmployeeCode()) {
-            AdditionalApprovalLine representApprovalLine = additionalApprovalLineRepository.findByApprovalDocCodeAndEmployeeCodeAndApprovalProcessStatus(approvalDocCode, (long) approvalRepresent.getAssignee().getEmployeeCode(), "대기");
-
-            if (representApprovalLine != null) {
-                // 결재 상태 업데이트
-                representApprovalLine.setApprovalProcessDate(LocalDateTime.now());
-                representApprovalLine.setApprovalProcessStatus("결재");
-                representApprovalLine.setEmployeeCode(approvalRepresent.getRepresentative());
-                additionalApprovalLineRepository.save(representApprovalLine);
-                return "결재 성공";
-            }
-        }
+        ApprovalResultDTO response = new ApprovalResultDTO();
 
         if (!approvalSubject.equals(employeeCode)) {
-            return "결재 대상이 아닙니다.";
+            response.setMessage("결재 대상이 아닙니다.");
+            return response;
         }
 
         AdditionalApprovalLine additionalApprovalLine = additionalApprovalLineRepository.findByApprovalDocCodeAndEmployeeCodeAndApprovalProcessStatus(approvalDocCode, employeeCode, "대기");
@@ -517,11 +596,12 @@ public class ApprovalService {
             additionalApprovalLine.setApprovalProcessDate(LocalDateTime.now());
             additionalApprovalLine.setApprovalProcessStatus("결재");
             additionalApprovalLineRepository.save(additionalApprovalLine);
-            return "결재 성공";
+            response.setMessage("결재 성공");
+            return response;
         }
 
-        return "결재 대상이 아닙니다.";
-
+        response.setMessage("결재 대상이 아닙니다.");
+        return response;
     }
 
     // 반려하기
@@ -802,6 +882,7 @@ public class ApprovalService {
         // 해당 사용자의 결재 문서 중 임시 저장이 'Y'인 문서 조회
         return approvalDocRepository.findByEmployeeCodeAndWhetherSavingApproval(loginEmployee, "Y");
     }
+
 
     // 문서 상세 조회
 
