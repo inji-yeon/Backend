@@ -606,26 +606,21 @@ public class ApprovalService {
 
     // 반려하기
     @Transactional
-    public String rejection(Long approvalDocCode, User user) {
+    public ApprovalResultDTO rejection(Long approvalDocCode, User user, String rejectionReason) {
 
         // 반려 대상 조회
         Long approvalSubject = additionalApprovalLineRepository.approvalSubjectEmployeeCode(approvalDocCode);
-
-        System.out.println("approvalSubject ========== " + approvalSubject);
-        System.out.println("approvalSubject.getClass() = " + approvalSubject.getClass());
 
         // 로그인한 사용자의 정보 가져오기
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         Long employeeCode = (long) loginEmployee.getEmployeeCode();
 
-        System.out.println("loginEmployee.getEmployeeCode() = " + loginEmployee.getEmployeeCode());
-        System.out.println("loginEmployee.getClass() = " + loginEmployee.getClass());
-
-        System.out.println("employeeCode ======== " + employeeCode);
+        ApprovalResultDTO response = new ApprovalResultDTO();
 
         // 반려 대상과 로그인한 사용자 employeeCode 비교
         if (!approvalSubject.equals(employeeCode)) {
-            return "반려 대상이 아닙니다.";
+            response.setMessage("반려 대상이 아닙니다.");
+            return response;
         }
 
         // 대기 상태인 모든 approvalLine 조회
@@ -637,11 +632,14 @@ public class ApprovalService {
             optionalApprovalLine.ifPresent(approvalLine -> {
                 approvalLine.setApprovalProcessDate(LocalDateTime.now());
                 approvalLine.setApprovalProcessStatus("반려");
+                approvalLine.setApprovalRejectedReason(rejectionReason);
+                System.out.println("approvalLine = " + approvalLine);
                 additionalApprovalLineRepository.save(approvalLine);
             });
         }
 
-        return "반려 성공";
+        response.setMessage("반려 대상이 아닙니다.");
+        return response;
     }
 
     // 상신 문서 회수

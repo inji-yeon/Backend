@@ -180,13 +180,14 @@ public class ApprovalController {
 
     @Tag(name = "반려", description = "로그인한 사용자가 결재자로 지정된 문서 반려하기")
     @PutMapping("/rejection/{approvalDocCode}")
-    public ResponseEntity<String> rejection(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> rejection(@PathVariable Long approvalDocCode,
+                                                 @AuthenticationPrincipal User user,
+                                                 @RequestBody String rejectionReason){
         System.out.println("approvalDocCode = " + approvalDocCode);
         System.out.println("em = " + user.getEmployeeCode());
 
-        String result = approvalService.rejection(approvalDocCode, user);
-        System.out.println("result ========== " + result);
-        return ResponseEntity.ok(result);
+        approvalService.rejection(approvalDocCode, user, rejectionReason);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "반려 성공"));
     }
 
     @Tag(name = "상신 문서 회수", description = "로그인한 사용자가 상신한 문서 중, 첫 번째 결재자가 아직 결재하지 않은 문서 회수하기")
