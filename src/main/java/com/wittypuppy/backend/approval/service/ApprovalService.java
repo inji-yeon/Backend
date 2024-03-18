@@ -958,4 +958,32 @@ public class ApprovalService {
 
         return inboxRejctedDocList;
     }
+
+    // 열람함 목록 조회
+    public List<ApprovalDocWithRef> referenceList(User user) {
+        // 로그인한 사용자의 정보 가져오기
+        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
+        
+        // 해당 사용자가 지정된 reference 조회
+        List<ApprovalReference> references = approvalReferenceRepository.findByEmployeeCode((long) loginEmployee.getEmployeeCode());
+        System.out.println("references = " + references);
+
+        List<ApprovalDocWithRef> approvalDocWithRefs = new ArrayList<>();
+        for(ApprovalReference reference : references) {
+            ApprovalDoc doc = approvalDocRepository.findByApprovalDocCode(reference.getApprovalDocCode());
+            System.out.println("doc = " + doc);
+
+            Long refCode = reference.getApprovalReferenceCode();
+            System.out.println("refCode = " + refCode);
+
+            String whetherChecked = approvalReferenceRepository.findWhetherCheckedByApprovalReferenceCode(refCode);
+            System.out.println("whetherChecked = " + whetherChecked);
+
+            ApprovalDocWithRef approvalDocWithRef = new ApprovalDocWithRef(doc, whetherChecked);
+            approvalDocWithRefs.add(approvalDocWithRef);
+        }
+
+        return approvalDocWithRefs;
+    }
+
 }

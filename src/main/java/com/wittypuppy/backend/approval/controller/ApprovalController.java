@@ -3,6 +3,7 @@ package com.wittypuppy.backend.approval.controller;
 import com.wittypuppy.backend.Employee.dto.User;
 import com.wittypuppy.backend.approval.dto.*;
 import com.wittypuppy.backend.approval.entity.ApprovalDoc;
+import com.wittypuppy.backend.approval.entity.ApprovalDocWithRef;
 import com.wittypuppy.backend.approval.entity.ApprovalDocWithStatus;
 import com.wittypuppy.backend.approval.service.ApprovalService;
 import com.wittypuppy.backend.common.dto.ResponseDTO;
@@ -270,4 +271,13 @@ public class ApprovalController {
         System.out.println("RejectedDocs = " + RejectedDocs);
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", RejectedDocs));
     }
+
+    // 열람함 목록 조회
+    @GetMapping("/reference-list")
+    public ResponseEntity<ResponseDTO> referenceList(@AuthenticationPrincipal User user) {
+        List<ApprovalDocWithRef> referenceDocs = approvalService.referenceList(user);
+        System.out.println("referenceDocs = " + referenceDocs);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", referenceDocs));
+    }
+
 }
