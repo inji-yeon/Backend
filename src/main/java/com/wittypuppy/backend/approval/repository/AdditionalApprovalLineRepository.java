@@ -1,14 +1,12 @@
 package com.wittypuppy.backend.approval.repository;
 
-import com.wittypuppy.backend.approval.dto.AdditionalApprovalLineDTO;
 import com.wittypuppy.backend.approval.entity.AdditionalApprovalLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+
 public interface AdditionalApprovalLineRepository extends JpaRepository<AdditionalApprovalLine, Long> {
     @Query(value =
             "SELECT " +
@@ -78,4 +76,12 @@ public interface AdditionalApprovalLineRepository extends JpaRepository<Addition
             nativeQuery = true)
     List<AdditionalApprovalLine> findByEmployeeCode(Long employeeCode);
 
+    @Query(value =
+            "SELECT " +
+                    "approval_document_code " +
+                    "FROM tbl_approval_line a " +
+                    "WHERE a.employee_code = :employeeCode " +
+                    "AND a.approval_process_status = '반려'",
+            nativeQuery = true)
+    List<Long> findRejectedByEmployeeCode(Long employeeCode);
 }

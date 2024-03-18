@@ -942,4 +942,20 @@ public class ApprovalService {
         return docsWithStatus;
     }
 
+    public List<ApprovalDoc> inboxRejectedListByEmployeeCode(User user) {
+        // 로그인한 사용자의 정보 가져오기
+        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
+
+        // 해당 사용자가 반려한 결재선의 문서코드 조회
+        List<Long> rejectedDocCodes = additionalApprovalLineRepository.findRejectedByEmployeeCode(Long.valueOf(loginEmployee.getEmployeeCode()));
+        System.out.println("rejectedDocCodes = " + rejectedDocCodes);
+
+        List<ApprovalDoc> inboxRejctedDocList = new ArrayList<>();
+        for (Long rejectedDocCode : rejectedDocCodes) {
+            ApprovalDoc docList = approvalDocRepository.findByApprovalDocCode(rejectedDocCode);
+            inboxRejctedDocList.add(docList);
+        }
+
+        return inboxRejctedDocList;
+    }
 }

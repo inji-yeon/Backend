@@ -263,4 +263,11 @@ public class ApprovalController {
         System.out.println("finishedDocsWithStatus = " + finishedDocsWithStatus);
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", finishedDocsWithStatus));
     }
+
+    @GetMapping("/inbox-rejected")
+    public ResponseEntity<ResponseDTO> inboxRejected(@AuthenticationPrincipal User user) {
+        List<ApprovalDoc> RejectedDocs = approvalService.inboxRejectedListByEmployeeCode(user);
+        System.out.println("RejectedDocs = " + RejectedDocs);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", RejectedDocs));
+    }
 }
