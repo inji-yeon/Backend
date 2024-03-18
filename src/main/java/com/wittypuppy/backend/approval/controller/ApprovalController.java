@@ -3,6 +3,7 @@ package com.wittypuppy.backend.approval.controller;
 import com.wittypuppy.backend.Employee.dto.User;
 import com.wittypuppy.backend.approval.dto.*;
 import com.wittypuppy.backend.approval.entity.ApprovalDoc;
+import com.wittypuppy.backend.approval.entity.ApprovalDocWithStatus;
 import com.wittypuppy.backend.approval.service.ApprovalService;
 import com.wittypuppy.backend.common.dto.ResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,6 +53,10 @@ public class ApprovalController {
     // 결재 대기함 - 연장근로
     @GetMapping("overwork-details-inbox/{approvalDocCode}")
     public ResponseEntity<ResponseDTO> selectOverworkInbox(@PathVariable Long approvalDocCode){
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsInbox(approvalDocCode)));
+    }
+    @GetMapping("overwork-details-inbox-fin/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectOverworkInboxFinished(@PathVariable Long approvalDocCode){
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsInbox(approvalDocCode)));
     }
 
@@ -251,6 +256,11 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", finishedDocs));
     }
 
-    // 재기안
-
+    // 결재 수신함 - 결재 완료함 조회
+    @GetMapping("/inbox-finished-docs")
+    public ResponseEntity<ResponseDTO> inboxFinishedDocsWithStatus(@AuthenticationPrincipal User user) {
+        List<ApprovalDocWithStatus> finishedDocsWithStatus = approvalService.findFinishedDocsWithStatusInbox(user);
+        System.out.println("finishedDocsWithStatus = " + finishedDocsWithStatus);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", finishedDocsWithStatus));
+    }
 }

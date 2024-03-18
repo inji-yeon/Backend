@@ -20,4 +20,5 @@ public class ApprovalDocDTO {
     private User employeeCode;
     private LocalDateTime approvalRequestDate;
     private String whetherSavingApproval;
+    private String lastLineStatus;
 }

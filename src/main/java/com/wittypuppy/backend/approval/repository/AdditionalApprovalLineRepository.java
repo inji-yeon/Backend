@@ -68,6 +68,14 @@ public interface AdditionalApprovalLineRepository extends JpaRepository<Addition
 
 
     AdditionalApprovalLine findByApprovalDocCodeAndEmployeeCodeAndApprovalProcessStatus(Long approvalDocCode, Long employeeCode, String approvalProcessStatus);
+
+    @Query(value =
+            "SELECT " +
+                    "a.* " +
+                    "FROM tbl_approval_line a " +
+                    "WHERE a.employee_code = :employeeCode " +
+                    "AND a.approval_process_status != '대기'",
+            nativeQuery = true)
     List<AdditionalApprovalLine> findByEmployeeCode(Long employeeCode);
 
 }
