@@ -23,4 +23,6 @@ public interface ApprovalReferenceRepository extends JpaRepository<ApprovalRefer
                     "WHERE a.approval_reference_code = :approvalReferenceCode",
             nativeQuery = true)
     String findWhetherCheckedByApprovalReferenceCode(@Param("approvalReferenceCode") Long approvalReferenceCode);
+
+    ApprovalReference findByEmployeeCodeAndApprovalDocCode(Long employeeCode, Long approvalDocCode);
 }

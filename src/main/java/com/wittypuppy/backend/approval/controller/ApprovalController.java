@@ -41,29 +41,36 @@ public class ApprovalController {
 
     // 결재 진행함 - 연장근로
     @GetMapping("overwork-details-op/{approvalDocCode}")
-    public ResponseEntity<ResponseDTO> selectOverworkOP(@PathVariable Long approvalDocCode){
+    public ResponseEntity<ResponseDTO> selectOverworkOP(@PathVariable Long approvalDocCode) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsOP(approvalDocCode)));
     }
 
     // 결재 완료함 - 연장근로
     @GetMapping("overwork-details-fin/{approvalDocCode}")
-    public ResponseEntity<ResponseDTO> selectOverworkFin(@PathVariable Long approvalDocCode){
+    public ResponseEntity<ResponseDTO> selectOverworkFin(@PathVariable Long approvalDocCode) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsFin(approvalDocCode)));
     }
 
     // 결재 대기함 - 연장근로
     @GetMapping("overwork-details-inbox/{approvalDocCode}")
-    public ResponseEntity<ResponseDTO> selectOverworkInbox(@PathVariable Long approvalDocCode){
+    public ResponseEntity<ResponseDTO> selectOverworkInbox(@PathVariable Long approvalDocCode) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsInbox(approvalDocCode)));
     }
+
     @GetMapping("overwork-details-inbox-fin/{approvalDocCode}")
-    public ResponseEntity<ResponseDTO> selectOverworkInboxFinished(@PathVariable Long approvalDocCode){
+    public ResponseEntity<ResponseDTO> selectOverworkInboxFinished(@PathVariable Long approvalDocCode) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsInbox(approvalDocCode)));
+    }
+
+    // 열람함 - 연장근로
+    @GetMapping("overwork-details-ref/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectOverworkRef(@PathVariable Long approvalDocCode) {
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsRef(approvalDocCode)));
     }
 
     @Tag(name = "문서 상신", description = "결재 문서 상신하기")
     @PostMapping("/submit-on-leave")
-    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(ApprovalDocDTO approvalDocDTO, MultipartFile file, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(ApprovalDocDTO approvalDocDTO, MultipartFile file, @AuthenticationPrincipal User user) {
         ApprovalDoc savedApprovalDoc = approvalService.saveOnLeaveApprovalDoc(approvalDocDTO, user);
         approvalService.saveOnLeaveDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
@@ -99,7 +106,7 @@ public class ApprovalController {
 
     // 로그인한 사원 조회
     @GetMapping("/loggedin-employee")
-    public ResponseEntity<ResponseDTO> getLoggedinEmployee(@AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> getLoggedinEmployee(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "로그인한 사원 조회 성공", approvalService.approvalUserInfo(user)));
     }
 
@@ -136,7 +143,7 @@ public class ApprovalController {
     }
 
     @PostMapping("/submit-sw-use")
-    public ResponseEntity<ResponseDTO> submitSWUseApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> submitSWUseApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user) {
         ApprovalDoc savedApprovalDoc = approvalService.saveSWUseveApprovalDoc(approvalDocDTO, user);
         approvalService.saveSWDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
@@ -149,7 +156,7 @@ public class ApprovalController {
     }
 
     @PostMapping("/submit-work-type")
-    public ResponseEntity<ResponseDTO> submitWorkTypeApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> submitWorkTypeApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user) {
         ApprovalDoc savedApprovalDoc = approvalService.saveWorkTypeApprovalDoc(approvalDocDTO, user);
         approvalService.saveWorkTypeDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
@@ -177,18 +184,19 @@ public class ApprovalController {
 
     @Tag(name = "결재", description = "로그인한 사용자가 결재자로 지정된 문서 결재하기")
     @PutMapping("/approvement/{approvalDocCode}")
-    public ResponseEntity<ResponseDTO> approvement(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> approvement(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user) {
         System.out.println("approvalDocCode = " + approvalDocCode);
         System.out.println("em = " + user.getEmployeeCode());
 
         approvalService.approvement(approvalDocCode, user);
-        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "결재 성공"));    }
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "결재 성공"));
+    }
 
     @Tag(name = "반려", description = "로그인한 사용자가 결재자로 지정된 문서 반려하기")
     @PutMapping("/rejection/{approvalDocCode}")
     public ResponseEntity<ResponseDTO> rejection(@PathVariable Long approvalDocCode,
                                                  @AuthenticationPrincipal User user,
-                                                 @RequestBody String rejectionReason){
+                                                 @RequestBody String rejectionReason) {
         System.out.println("approvalDocCode = " + approvalDocCode);
         System.out.println("em = " + user.getEmployeeCode());
 
@@ -198,7 +206,7 @@ public class ApprovalController {
 
     @Tag(name = "상신 문서 회수", description = "로그인한 사용자가 상신한 문서 중, 첫 번째 결재자가 아직 결재하지 않은 문서 회수하기")
     @PutMapping("/retrieval/{approvalDocCode}")
-    public ResponseEntity<ApprovalResultDTO> retrieval(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user){
+    public ResponseEntity<ApprovalResultDTO> retrieval(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user) {
         ApprovalResultDTO response = approvalService.retrieval(approvalDocCode, user);
         System.out.println("response ========== " + response);
         return ResponseEntity.ok(response);
@@ -234,7 +242,7 @@ public class ApprovalController {
 
     // 임시 저장 - 연장근로
     @PostMapping("/temp-save-overwork")
-    public ResponseEntity<ResponseDTO> temporarySaveOverwork(@ModelAttribute OverworkDTO overworkDTO, @AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDTO> temporarySaveOverwork(@ModelAttribute OverworkDTO overworkDTO, @AuthenticationPrincipal User user) {
         System.out.println("save overwork start=======");
 
         ApprovalDoc savedApprovalDoc = approvalService.temporarySaveOverwork(overworkDTO, user);
@@ -280,4 +288,11 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", referenceDocs));
     }
 
+    // 열람 확인 체크
+    @PutMapping("/reference-checked/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> referenceChecked(@PathVariable Long approvalDocCode, @AuthenticationPrincipal User user) {
+        String result = approvalService.checkReference(approvalDocCode, user);
+        System.out.println("result ========!!=== " + result);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "열람 체크 완료", result));
+    }
 }

@@ -5,8 +5,8 @@ Accept: */*
 Access-Control-Allow-Origin: *
 
 {
-  "employeeId": "ap_third",
-  "employeePassword": "ap_third"
+  "employeeId": "ap_second",
+  "employeePassword": "ap_second"
 }
 
 ### 결재 대기 문서 조회
@@ -170,3 +170,9 @@ GET http://localhost:1208/approval/reference-list
 Accept: */*
 Content-Type: application/json
 Authorization: Bearer eyJkYXRlIjoxNzEwNzYxNzI4Mzg4LCJ0eXBlIjoiand0IiwiYWxnIjoiSFMyNTYifQ.eyJlbXBsb3llZU5hbWUiOiLqs6DsnKTsoJUiLCJzdWIiOiJhcF90aGlyZCIsImVtcERlcHROYW1lIjoi6rCc67CcMe2MgCIsImVtcENvZGUiOjMyLCJlbXBsb3llZUVtYWlsIjoiYXBob2V0aGlyZEBnbWFpbC5jb20iLCJlbXBHcm91cENvZGUiOjMsImVtcGxveWVlSWQiOiJhcF90aGlyZCIsImV4cCI6MTcxMDc5NzcyOCwiZW1wbG95ZWVSb2xlIjpbeyJlbXBsb3llZUNvZGUiOjMyLCJhdXRob3JpdHlDb2RlIjoxLCJhdXRob3JpdHkiOnsiYXV0aG9yaXR5Q29kZSI6MSwiYXV0aG9yaXR5TmFtZSI6IlJPTEVfVVNFUiJ9fV19.8DSjt3sUY14PRiJ2Lx0Ix0XxJg8_DfZ-DnOcOrPAwZE
+
+### 사이드바 숫자
+GET http://localhost:1208/approval/get-counts
+Accept: */*
+Content-Type: application/json
+Authorization: Bearer eyJkYXRlIjoxNzEwODQyMjkwNzU5LCJ0eXBlIjoiand0IiwiYWxnIjoiSFMyNTYifQ.eyJlbXBsb3llZU5hbWUiOiLquYDrr7zsnqwiLCJzdWIiOiJhcF9zZWNvbmQiLCJlbXBEZXB0TmFtZSI6Iuy0neustO2MgCIsImVtcENvZGUiOjMxLCJlbXBsb3llZUVtYWlsIjoiZmRzaHFoampAZ21haWwuY29tIiwiZW1wR3JvdXBDb2RlIjoxLCJlbXBsb3llZUlkIjoiYXBfc2Vjb25kIiwiZXhwIjoxNzEwODc4MjkwLCJlbXBsb3llZVJvbGUiOlt7ImVtcGxveWVlQ29kZSI6MzEsImF1dGhvcml0eUNvZGUiOjEsImF1dGhvcml0eSI6eyJhdXRob3JpdHlDb2RlIjoxLCJhdXRob3JpdHlOYW1lIjoiUk9MRV9VU0VSIn19XX0.FEt3WmapaYifMctRzJXXyhGdNw9O-2aaoxnIKCRqBxs

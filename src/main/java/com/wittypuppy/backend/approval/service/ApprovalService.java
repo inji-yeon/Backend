@@ -891,7 +891,12 @@ public class ApprovalService {
         // 로그인한 사용자 코드의 결재선 코드 가져오기
         List<AdditionalApprovalLine> approvalLines = additionalApprovalLineRepository.findByEmployeeCode((long) loginEmployee.getEmployeeCode());
         System.out.println("approvalLines = " + approvalLines);
-        
+
+        // 결재선이 비어있는 경우 처리
+        if (approvalLines.isEmpty()) {
+            return finishedDocs;
+        }
+
         // 해당 결재선 코드의 문서 코드 가져오기
         for (AdditionalApprovalLine approvalLine : approvalLines) {
             Long approvalDocCode = approvalLine.getApprovalDocCode();
@@ -912,18 +917,20 @@ public class ApprovalService {
 
         // 해당 문서의 문서 코드 가져오기
         for(ApprovalDoc finishedDoc : finishedDocs) {
-            Long finishedDocCode = finishedDoc.getApprovalDocCode();
+            if (finishedDoc != null) {
+                Long finishedDocCode = finishedDoc.getApprovalDocCode();
 
-            // 마지막 결재선 가져오기
-            List<AdditionalApprovalLine> linesForDoc = additionalApprovalLineRepository.findByApprovalDocCode(finishedDocCode);
-            AdditionalApprovalLine lastApprovalLine = linesForDoc.get(linesForDoc.size() - 1);
+                // 마지막 결재선 가져오기
+                List<AdditionalApprovalLine> linesForDoc = additionalApprovalLineRepository.findByApprovalDocCode(finishedDocCode);
+                AdditionalApprovalLine lastApprovalLine = linesForDoc.get(linesForDoc.size() - 1);
 
-            // 마지막 결재선의 상태 가져오기
-            String status = lastApprovalLine.getApprovalProcessStatus();
+                // 마지막 결재선의 상태 가져오기
+                String status = lastApprovalLine.getApprovalProcessStatus();
 
-            finishedDocsStatus.add(status);
-        }
-        return finishedDocsStatus;
+                finishedDocsStatus.add(status);
+            }
+            return finishedDocsStatus;
+        } return null;
     }
 
     public List<ApprovalDocWithStatus> findFinishedDocsWithStatusInbox(User user) {
@@ -935,7 +942,8 @@ public class ApprovalService {
 
         // ApprovalDoc와 상태를 결합하여 ApprovalDocWithStatus 객체로 만들어 리스트에 추가
         List<ApprovalDocWithStatus> docsWithStatus = new ArrayList<>();
-        for (int i = 0; i < finishedDocs.size(); i++) {
+        int size = Math.min(finishedDocs.size(), docStatus.size()); // 두 리스트 중 짧은 길이를 사용
+        for (int i = 0; i < size; i++) {
             docsWithStatus.add(new ApprovalDocWithStatus(finishedDocs.get(i), docStatus.get(i)));
         }
 
@@ -984,6 +992,79 @@ public class ApprovalService {
         }
 
         return approvalDocWithRefs;
+    }
+    // 열람함 문서 조회 - 연장근로
+    public Object overworkDetailsRef(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOverworkDoc = " + savedOverworkDoc);
+
+        // overwork 정보 가져오기
+        Overwork overwork = overworkRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("overwork = " + overwork);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOverworkDoc);
+        docDetailsDTO.setOverwork(overwork);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
+    // 열람 확인 체크
+    public String checkReference(Long approvalDocCode, User user) {
+
+        // 로그인한 회원 정보 가져오기
+        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
+
+        // 사원 번호랑 문서 코드로 ApprovalReference 가져오기
+        ApprovalReference approvalReference = approvalReferenceRepository.findByEmployeeCodeAndApprovalDocCode((long) loginEmployee.getEmployeeCode(), approvalDocCode);
+        System.out.println("approvalReference = " + approvalReference);
+
+        // 이미 체크된 경우
+        if (approvalReference.getWhetherCheckedApproval().equals("Y")) {
+            return "alreadyChecked";
+        }
+
+        // 상태 설정하기
+        approvalReference.setWhetherCheckedApproval("Y");
+        approvalReferenceRepository.save(approvalReference);
+
+        return "checkCompleted";
     }
 
 }
