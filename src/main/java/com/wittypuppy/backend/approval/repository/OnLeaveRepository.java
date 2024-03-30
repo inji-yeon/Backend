@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface OnLeaveRepository extends JpaRepository<OnLeave, Long> {
 
-    List<OnLeave> findByApprovalDocCode(ApprovalDoc approvalDoc);
+    OnLeave findByApprovalDocCode(Long approvalDocCode);
 }

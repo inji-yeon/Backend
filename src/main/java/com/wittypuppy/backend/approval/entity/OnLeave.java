@@ -26,9 +26,8 @@ public class OnLeave {
     @Column(name = "on_leave_title")
     private String onLeaveTitle;
 
-    @JoinColumn(name = "remaining_on_leave")
-    @ManyToOne
-    private LoginEmployee onLeaveCount;
+    @Column(name = "remaining_on_leave")
+    private Long onLeaveCount;
 
     @Column(name = "kind_of_on_leave")
     private String kindOfOnLeave;

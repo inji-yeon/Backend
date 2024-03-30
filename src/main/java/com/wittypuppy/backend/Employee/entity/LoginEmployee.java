@@ -55,7 +55,10 @@ public class LoginEmployee {
     @ManyToOne
     private LoginDepartment empDepartment;
 
-    protected LoginEmployee(int employeeCode, String employeeId, String employeePassword, String employeeName, String employeeEmail, List<LoginEmployeeRole> employeeRole, String employeeRetireDate, Date employeeBirthDate) {}
+    @Column(name = "employee_on_leave_count")
+    private Long employeeOnLeaveCount;
+
+    protected LoginEmployee(int employeeCode, String employeeId, String employeePassword, String employeeName, String employeeEmail, List<LoginEmployeeRole> employeeRole, String employeeRetireDate, Date employeeBirthDate, Long employeeOnLeaveCount) {}
 
     public LoginEmployee() {
 
@@ -100,6 +103,10 @@ public class LoginEmployee {
         return this;
     }
 
+    public LoginEmployee employeeOnLeaveCount(Long employeeOnLeaveCount) {
+        this.employeeOnLeaveCount = employeeOnLeaveCount;
+        return this;
+    }
 
     //    public LoginEmployee build() {
 //        return new Member(memberCode, memberId, memberPassword, memberName, memberEmail, memberRole, memberStatus);
@@ -107,7 +114,7 @@ public class LoginEmployee {
 
     //builder생성
     public LoginEmployee build(){
-        return new LoginEmployee(employeeCode, employeeId, employeePassword, employeeName, employeeEmail, employeeRole, employeeRetireDate, employeeBirthDate, joinDate, empAddress, empPhone, empDepartment );
+        return new LoginEmployee(employeeCode, employeeId, employeePassword, employeeName, employeeEmail, employeeRole, employeeRetireDate, employeeBirthDate, joinDate, empAddress, empPhone, empDepartment, employeeOnLeaveCount );
     }
 
 

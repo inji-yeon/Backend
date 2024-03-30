@@ -21,16 +21,6 @@ Content-Type: application/json
 Accept: */*
 Access-Control-Allow-Origin: *
 
-{
-<<<<<<<<< Temporary merge branch 1
-  "employeeId": "user09",
-  "employeePassword": "pass09"
-=========
-  "employeeId": "root",
-  "employeePassword": "root"
->>>>>>>>> Temporary merge branch 2
-}
-
 ###비밀번호 찾기
 POST http://localhost:1208/api/v1/employee/searchpwd
 Content-Type: application/json

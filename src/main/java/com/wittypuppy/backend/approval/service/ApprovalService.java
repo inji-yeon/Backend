@@ -69,31 +69,46 @@ public class ApprovalService {
 
     // 기안 문서 정보 저장 - 휴가 신청서
     @Transactional
-    public ApprovalDoc saveOnLeaveApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
-        log.info("[ApprovalService] saving doc info started =====");
-
-        // 저장할 ApprovalDoc 객체 생성
-        ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
+    public ApprovalDoc saveOnLeaveApprovalDoc(OnLeaveDTO onLeaveDTO, User user) {
+        ApprovalDoc approvalDoc = new ApprovalDoc();
         approvalDoc.setApprovalForm("휴가신청서");
 
-        // OnLeave 문서 저장 및 해당 문서의 제목 반환
-        String onLeaveTitle = saveOnLeaveDoc(approvalDoc);
-
-        // 사용자 정보 설정
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
 
-        // 결재 요청일 설정
         approvalDoc.setApprovalRequestDate(LocalDateTime.now());
 
-        // 결재 여부 설정
         approvalDoc.setWhetherSavingApproval("N");
 
-        // 첫 번째 결재 라인 저장
-        saveFirstApprovalLine(approvalDoc, user);
+        approvalDoc.setApprovalTitle(onLeaveDTO.getOnLeaveTitle());
 
-        // ApprovalDoc 저장 후 반환
-        return approvalDocRepository.save(approvalDoc);
+        System.out.println("approvalDoc = " + approvalDoc);
+
+        ApprovalDoc result = approvalDocRepository.save(approvalDoc);
+
+        System.out.println("result = " + result);
+
+        OnLeave onLeave = new OnLeave();
+
+        onLeave.setApprovalDocCode(result.getApprovalDocCode());
+        onLeave.setOnLeaveTitle(onLeaveDTO.getOnLeaveTitle());
+        onLeave.setKindOfOnLeave(onLeaveDTO.getKindOfOnLeave());
+
+        // 받은 문자열 형식의 날짜를 Date로 변환
+        Date onLeaveStartDate = java.sql.Date.valueOf(LocalDate.parse(onLeaveDTO.getOnLeaveStartDate()));
+        onLeave.setOnLeaveStartDate(String.valueOf(onLeaveStartDate));
+
+        Date onLeaveEndDate = java.sql.Date.valueOf(LocalDate.parse(onLeaveDTO.getOnLeaveEndDate()));
+        onLeave.setOnLeaveEndDate(String.valueOf(onLeaveEndDate));
+
+        onLeave.setOnLeaveReason(onLeaveDTO.getOnLeaveReason());
+
+        onLeave.setOnLeaveCount(loginEmployee.getEmployeeOnLeaveCount());
+
+        System.out.println("onLeave = " + onLeave);
+        onLeaveRepository.save(onLeave);
+
+        return result;
     }
 
     // 기안 문서 정보 저장 - 연장근로 신청서
@@ -179,6 +194,68 @@ public class ApprovalService {
         DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
         docDetailsDTO.setApprovalDoc(savedOverworkDoc);
         docDetailsDTO.setOverwork(overwork);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
+        // 회수 가능 여부 확인
+        for (AdditionalApprovalLine approvalLine : additionalApprovalLines) {
+            String status = approvalLine.getApprovalProcessStatus();
+            if (status.equals("결재") || status.equals("반려") || status.equals("회수")) {
+                docDetailsDTO.setAvailability(false);
+                break;
+            } else if (status.equals("기안") || status.equals("대기")) {
+                docDetailsDTO.setAvailability(true);
+            }
+        }
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
+
+    // 결재 진행함 문서 조회 - 휴가 신청서
+    public DocDetailsDTO onLeaveDetailsOP(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOnLeaveDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOnLeaveDoc = " + savedOnLeaveDoc);
+
+        OnLeave onLeave = onLeaveRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("onLeave = " + onLeave);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOnLeaveDoc);
+        docDetailsDTO.setOnLeave(onLeave);
         docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
         docDetailsDTO.setApprovalReferences(approvalReferences);
         docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);

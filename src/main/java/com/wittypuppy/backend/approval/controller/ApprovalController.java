@@ -39,6 +39,12 @@ public class ApprovalController {
         this.approvalService = approvalService;
     }
 
+    // 결재 진행함 - 휴가 신청서
+    @GetMapping("on-leave-details-op/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectOnLeaveOP(@PathVariable Long approvalDocCode) {
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.onLeaveDetailsOP(approvalDocCode)));
+    }
+
     // 결재 진행함 - 연장근로
     @GetMapping("overwork-details-op/{approvalDocCode}")
     public ResponseEntity<ResponseDTO> selectOverworkOP(@PathVariable Long approvalDocCode) {
@@ -68,19 +74,6 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsRef(approvalDocCode)));
     }
 
-    @Tag(name = "문서 상신", description = "결재 문서 상신하기")
-    @PostMapping("/submit-on-leave")
-    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(ApprovalDocDTO approvalDocDTO, MultipartFile file, @AuthenticationPrincipal User user) {
-        ApprovalDoc savedApprovalDoc = approvalService.saveOnLeaveApprovalDoc(approvalDocDTO, user);
-        approvalService.saveOnLeaveDoc(savedApprovalDoc);
-        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-
-        // 추가 결재자 목록
-        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
-        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
-
-        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
-    }
 
     // 첨부 파일 다운로드
     @GetMapping("/attachment/{fileName}")
@@ -108,6 +101,38 @@ public class ApprovalController {
     @GetMapping("/loggedin-employee")
     public ResponseEntity<ResponseDTO> getLoggedinEmployee(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "로그인한 사원 조회 성공", approvalService.approvalUserInfo(user)));
+    }
+
+    @PostMapping("/submit-on-leave")
+    public ResponseEntity<ResponseDTO> submitOnLeaveApproval(@ModelAttribute OnLeaveDTO onLeaveDTO,
+                                                              @RequestParam("additionalApprovers") List<Long> additionalApprovers,
+                                                              @RequestParam(value = "refViewers", required = false) List<Long> refViewers,
+                                                              @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                                              @AuthenticationPrincipal User user) throws IOException {
+
+        System.out.println("submit on leave start=======");
+
+        ApprovalDoc savedApprovalDoc = approvalService.saveOnLeaveApprovalDoc(onLeaveDTO, user);
+        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
+
+        // 추가 결재자 목록
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
+        // 열람자 지정
+        if (refViewers != null) {
+            approvalService.saveRefViewers(savedApprovalDoc, refViewers);
+        }
+
+        // 파일 첨부
+        if (files != null && files.length > 0) {
+            for (MultipartFile file : files) {
+                approvalService.saveAttachement(savedApprovalDoc, file);
+            }
+        }
+
+        System.out.println("files ===== " + files);
+
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
     @PostMapping("/submit-overwork")

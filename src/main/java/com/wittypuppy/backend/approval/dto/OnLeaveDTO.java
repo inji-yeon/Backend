@@ -14,7 +14,7 @@ public class OnLeaveDTO {
     private Long onLeaveCode;
     private Long approvalDocCode;
     private String onLeaveTitle;
-    private User onLeaveCount;
+    private Long onLeaveCount;
     private String kindOfOnLeave;
     private String onLeaveStartDate;
     private String onLeaveEndDate;
