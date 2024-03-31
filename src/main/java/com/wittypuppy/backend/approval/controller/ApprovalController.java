@@ -57,6 +57,17 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.overworkDetailsFin(approvalDocCode)));
     }
 
+    // 결재 완료함 - SW 사용
+    @GetMapping("sw-details-fin/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectSWFin(@PathVariable Long approvalDocCode) {
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.swDetailsFin(approvalDocCode)));
+    }
+    // 결재 완료함 - 재택근무
+    @GetMapping("work-type-details-fin/{approvalDocCode}")
+    public ResponseEntity<ResponseDTO> selectWorkTypeFin(@PathVariable Long approvalDocCode) {
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "조회 성공", approvalService.workTypeDetailsFin(approvalDocCode)));
+    }
+
     // 결재 대기함 - 연장근로
     @GetMapping("overwork-details-inbox/{approvalDocCode}")
     public ResponseEntity<ResponseDTO> selectOverworkInbox(@PathVariable Long approvalDocCode) {
@@ -135,6 +146,37 @@ public class ApprovalController {
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
     }
 
+    @PostMapping("/submit-work-type")
+    public ResponseEntity<ResponseDTO> submitWorkTypeApproval(@ModelAttribute WorkTypeDTO workTypeDTO,
+                                                              @RequestParam("additionalApprovers") List<Long> additionalApprovers,
+                                                              @RequestParam(value = "refViewers", required = false) List<Long> refViewers,
+                                                              @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                                              @AuthenticationPrincipal User user) throws IOException {
+        System.out.println("submit work type start=======");
+
+        ApprovalDoc savedApprovalDoc = approvalService.saveWorkTypeApprovalDoc(workTypeDTO, user);
+        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
+
+        // 추가 결재자 목록
+        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
+
+        // 열람자 지정
+        if (refViewers != null) {
+            approvalService.saveRefViewers(savedApprovalDoc, refViewers);
+        }
+
+        // 파일 첨부
+        if (files != null && files.length > 0) {
+            for (MultipartFile file : files) {
+                approvalService.saveAttachement(savedApprovalDoc, file);
+            }
+        }
+
+        System.out.println("files ===== " + files);
+
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
+    }
+
     @PostMapping("/submit-overwork")
     public ResponseEntity<ResponseDTO> submitOverworkApproval(@ModelAttribute OverworkDTO overworkDTO,
                                                               @RequestParam("additionalApprovers") List<Long> additionalApprovers,
@@ -171,19 +213,6 @@ public class ApprovalController {
     public ResponseEntity<ResponseDTO> submitSWUseApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user) {
         ApprovalDoc savedApprovalDoc = approvalService.saveSWUseveApprovalDoc(approvalDocDTO, user);
         approvalService.saveSWDoc(savedApprovalDoc);
-        approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
-
-        // 추가 결재자 목록
-        List<Long> additionalApprovers = Arrays.asList(1L, 2L, 32L);
-        approvalService.saveApprovalLines(savedApprovalDoc, additionalApprovers);
-
-        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "상신 성공"));
-    }
-
-    @PostMapping("/submit-work-type")
-    public ResponseEntity<ResponseDTO> submitWorkTypeApproval(ApprovalDocDTO approvalDocDTO, @AuthenticationPrincipal User user) {
-        ApprovalDoc savedApprovalDoc = approvalService.saveWorkTypeApprovalDoc(approvalDocDTO, user);
-        approvalService.saveWorkTypeDoc(savedApprovalDoc);
         approvalService.saveFirstApprovalLine(savedApprovalDoc, user);
 
         // 추가 결재자 목록
@@ -271,6 +300,15 @@ public class ApprovalController {
         System.out.println("save overwork start=======");
 
         ApprovalDoc savedApprovalDoc = approvalService.temporarySaveOverwork(overworkDTO, user);
+        return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "저장 성공"));
+    }
+
+    // 임시 저장 - 재택근무
+    @PostMapping("/temp-save-work-type")
+    public ResponseEntity<ResponseDTO> temporarySaveWorkType(@ModelAttribute WorkTypeDTO workTypeDTO, @AuthenticationPrincipal User user) {
+        System.out.println("save work type start=======");
+
+        ApprovalDoc savedApprovalDoc = approvalService.temporarySaveWorktype(workTypeDTO, user);
         return ResponseEntity.ok().body(new ResponseDTO(HttpStatus.OK, "저장 성공"));
     }
 

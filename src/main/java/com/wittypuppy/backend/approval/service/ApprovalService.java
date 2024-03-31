@@ -7,6 +7,7 @@ import com.wittypuppy.backend.approval.entity.*;
 import com.wittypuppy.backend.approval.repository.*;
 import com.wittypuppy.backend.util.FileUploadUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.jdbc.Work;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -344,6 +345,107 @@ public class ApprovalService {
         return docDetailsDTO;
     }
 
+    // 결재 완료함 문서 조회 - 연장근로 신청서
+    public Object swDetailsFin(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOverworkDoc = " + savedOverworkDoc);
+
+
+        SoftwareUse softwareUse = softwareUseRepository.findByApprovalDocCode(approvalDocCode);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOverworkDoc);
+        docDetailsDTO.setSoftwareUse(softwareUse);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
+    // 결재 완료함 문서 조회 - 재택근무 신청서
+    public Object workTypeDetailsFin(Long approvalDocCode) {
+        // 문서 정보 가져오기
+        ApprovalDoc savedOverworkDoc = approvalDocRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("savedOverworkDoc = " + savedOverworkDoc);
+
+        WorkType workType = workTypeRepository.findByApprovalDocCode(approvalDocCode);
+
+        // 결재선 가져오기
+        List<AdditionalApprovalLine> additionalApprovalLines = additionalApprovalLineRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("additionalApprovalLines = " + additionalApprovalLines);
+
+        // 열람자 정보 가져오기
+        List<ApprovalReference> approvalReferences = approvalReferenceRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalReferences = " + approvalReferences);
+
+        // 첨부파일 정보 조회
+        List<ApprovalAttached> approvalAttachedFiles = approvalAttachedRepository.findByApprovalDocCode(approvalDocCode);
+        System.out.println("approvalAttachedFiles = " + approvalAttachedFiles);
+
+        // DTO에 매핑
+        DocDetailsDTO docDetailsDTO = new DocDetailsDTO();
+        docDetailsDTO.setApprovalDoc(savedOverworkDoc);
+        docDetailsDTO.setWorkType(workType);
+        docDetailsDTO.setAdditionalApprovalLines(additionalApprovalLines);
+        docDetailsDTO.setApprovalReferences(approvalReferences);
+        docDetailsDTO.setApprovalAttachedFiles(approvalAttachedFiles);
+
+        // 각 additionalApprovalLine의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> employeeDTOs = new ArrayList<>();
+        for (AdditionalApprovalLine line : additionalApprovalLines) {
+            Long employeeCode = line.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            employeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setEmployeeDTOs(employeeDTOs);
+
+        // 각 approvalReference의 사원 정보 조회 및 설정
+        List<ApprovalEmployeeDTO> referenceEmployeeDTOs = new ArrayList<>();
+        for (ApprovalReference reference : approvalReferences) {
+            Long employeeCode = reference.getEmployeeCode();
+            ApprovalEmployeeDTO employeeDTO = findUserDetail(employeeCode);
+            referenceEmployeeDTOs.add(employeeDTO);
+        }
+        docDetailsDTO.setReferenceEmployeeDTOs(referenceEmployeeDTOs);
+
+        System.out.println("DocDetailsDTO: " + docDetailsDTO);
+        return docDetailsDTO;
+    }
+
     // 결재 대기함 문서 조회 - 연장근로
     public Object overworkDetailsInbox(Long approvalDocCode) {
         // 문서 정보 가져오기
@@ -418,11 +520,9 @@ public class ApprovalService {
 
     // 기안 문서 정보 저장 - 외근/출장/재택근무 신청서
     @Transactional
-    public ApprovalDoc saveWorkTypeApprovalDoc(ApprovalDocDTO approvalDocDTO, User user) {
-        ApprovalDoc approvalDoc = modelMapper.map(approvalDocDTO, ApprovalDoc.class);
-        approvalDoc.setApprovalForm("근무형태신청서");
-
-        String workTypeTitle = saveWorkTypeDoc(approvalDoc);
+    public ApprovalDoc saveWorkTypeApprovalDoc(WorkTypeDTO workTypeDTO, User user) {
+        ApprovalDoc approvalDoc = new ApprovalDoc();
+        approvalDoc.setApprovalForm("재택근무신청서");
 
         LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
         approvalDoc.setEmployeeCode(loginEmployee);
@@ -431,9 +531,32 @@ public class ApprovalService {
 
         approvalDoc.setWhetherSavingApproval("N");
 
-        saveFirstApprovalLine(approvalDoc, user);
+        approvalDoc.setApprovalTitle(workTypeDTO.getWorkTypeTitle());
 
-        return approvalDocRepository.save(approvalDoc);
+        System.out.println("approvalDoc = " + approvalDoc);
+
+        ApprovalDoc result = approvalDocRepository.save(approvalDoc);
+
+        System.out.println("result = " + result);
+
+        WorkType workType = new WorkType();
+
+        workType.setApprovalDocCode(result.getApprovalDocCode());
+        workType.setWorkTypeTitle(workTypeDTO.getWorkTypeTitle());
+        workType.setWorkTypeForm("재택근무신청서");
+
+
+        // 받은 문자열 형식의 날짜를 Date로 변환
+        Date workTypeStartDate = java.sql.Date.valueOf(LocalDate.parse(workTypeDTO.getWorkTypeStartDate()));
+        workType.setWorkTypeStartDate(String.valueOf(workTypeStartDate));
+
+        workType.setWorkTypeReason(workTypeDTO.getWorkTypeReason());
+        workType.setWorkTypePlace(workTypeDTO.getWorkTypePlace());
+
+        System.out.println("workType = " + workType);
+        workTypeRepository.save(workType);
+
+        return result;
     }
 
     // 결재 문서 내용 추가 - 휴가 신청서
@@ -946,6 +1069,50 @@ public class ApprovalService {
         System.out.println("overwork = " + overwork);
         overworkRepository.save(overwork);
 
+        return result;
+    }
+
+    // 임시 저장 - 재택근무
+    @Transactional
+    public ApprovalDoc temporarySaveWorktype(WorkTypeDTO workTypeDTO, User user) {
+        ApprovalDoc approvalDoc = new ApprovalDoc();
+        approvalDoc.setApprovalForm("연장근로신청서");
+
+        LoginEmployee loginEmployee = modelMapper.map(user, LoginEmployee.class);
+        approvalDoc.setEmployeeCode(loginEmployee);
+
+        approvalDoc.setApprovalRequestDate(LocalDateTime.now());
+
+        approvalDoc.setWhetherSavingApproval("Y");
+
+        System.out.println("workTypeDTO.getWorkTypeTitle() = " + workTypeDTO.getWorkTypeTitle());
+        approvalDoc.setApprovalTitle(workTypeDTO.getWorkTypeTitle());
+
+        System.out.println("approvalDoc = " + approvalDoc);
+
+        ApprovalDoc result = approvalDocRepository.save(approvalDoc);
+
+        System.out.println("result = " + result);
+
+        WorkType workType = new WorkType();
+
+        workType.setApprovalDocCode(result.getApprovalDocCode());
+        workType.setWorkTypeTitle(workTypeDTO.getWorkTypeTitle());
+        workType.setWorkTypeForm("재택근무신청서");
+
+
+        // 받은 문자열 형식의 날짜를 Date로 변환
+        if (workTypeDTO.getWorkTypeStartDate() != null && !workTypeDTO.getWorkTypeStartDate().isEmpty()) {
+            Date workTypeStartDate = java.sql.Date.valueOf(LocalDate.parse(workTypeDTO.getWorkTypeStartDate()));
+            workType.setWorkTypeStartDate(String.valueOf(workTypeStartDate));
+        } else {
+            workType.setWorkTypeStartDate("");
+        }
+
+        workType.setWorkTypeReason(workTypeDTO.getWorkTypeReason());
+        workType.setWorkTypePlace(workTypeDTO.getWorkTypePlace());
+
+        workTypeRepository.save(workType);
         return result;
     }
 

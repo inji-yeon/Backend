@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface SoftwareUseRepository extends JpaRepository<SoftwareUse, Long> {
-    List<SoftwareUse> findByApprovalDocCode(ApprovalDoc approvalDoc);
+    SoftwareUse findByApprovalDocCode(Long approvalDocCode);
 }
